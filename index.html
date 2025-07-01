@@ -10,239 +10,275 @@
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; font-family: 'Rubik', sans-serif; background: #f0f0f0; }
-    body.dark { background: #121212; color: #eee; }
+    html, body {
+      height: 100%;
+      font-family: 'Rubik', sans-serif;
+      background: #f0f0f0;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+      z-index: 0;
+    }
 
-    #map { width: 100%; height: 100%; }
+    body.dark { background: #121212; }
 
     .glass {
-      background: rgba(255,255,255,0.3);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.4);
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
       border-radius: 12px;
-    }
-    body.dark .glass {
-      background: rgba(30,30,30,0.5);
-      border: 1px solid rgba(255,255,255,0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
 
     .logo-container {
-      position: absolute; top: 10px; left: 50%;
-      transform: translateX(-50%); z-index: 1003;
-    }
-    .logo {
-      max-height: 90px;
-      padding: 5px 12px;
-      border-radius: 12px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1002;
     }
 
-    .top-controls {
-      position: absolute; top: 20px; right: 20px; z-index: 1002;
-      display: flex; flex-direction: column; gap: 10px;
+    .logo-container img {
+      height: 80px;
+      padding: 6px 12px;
+      border-radius: 12px;
     }
-    .top-controls button {
-      padding: 8px 12px;
-      font-size: 16px;
+
+    .top-right-buttons {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1002;
+    }
+
+    .top-right-buttons button {
+      padding: 8px 14px;
+      font-size: 14px;
       border: none;
       cursor: pointer;
+      border-radius: 10px;
     }
-    .fullscreen-btn { display: none; }
 
     .menu-container {
-      position: absolute; bottom: 20px; left: 20px; z-index: 1001;
-      display: flex; gap: 10px;
-      overflow-x: auto; padding: 10px;
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      display: flex;
+      gap: 15px;
+      z-index: 1002;
+      overflow-x: auto;
     }
 
     .menu-group {
-      display: flex; flex-direction: column; align-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+
     .toggle-btn {
-      width: 48px; height: 48px;
-      border: none; border-radius: 12px;
-      font-size: 24px; cursor: pointer;
-      color: #333;
+      width: 48px;
+      height: 48px;
+      font-size: 24px;
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
     }
+
     .toggle-btn.active {
-      background: linear-gradient(135deg,#42a5f5,#1e88e5);
+      background: #2196f3;
       color: white;
     }
 
     .menu {
-      margin-top: 8px;
-      min-width: 200px; max-height: 180px;
-      padding: 8px;
+      margin-top: 6px;
+      width: 200px;
+      max-height: 160px;
+      padding: 10px;
       overflow-y: auto;
       display: none;
-      flex-direction: column; gap: 6px;
+      flex-direction: column;
+      gap: 8px;
     }
-    .menu.active { display: flex; }
+
+    .menu.active {
+      display: flex;
+    }
 
     .menu h3 {
       font-size: 14px;
       text-align: center;
-      margin-bottom: 6px;
     }
-    .menu input {
-      padding: 6px; border-radius: 6px;
-      border: none; outline: none;
-    }
-    summary {
+
+    details summary {
+      cursor: pointer;
       font-size: 14px;
-      cursor: pointer;
+    }
+
+    details button {
       padding: 6px;
+      margin-top: 4px;
+      width: 100%;
+      font-size: 14px;
+      background: #1976d2;
+      color: white;
+      border: none;
       border-radius: 6px;
-    }
-    details > button {
-      padding: 6px; font-size: 14px; margin-top: 4px;
-      background: #2196f3; color: white;
-      border: none; border-radius: 6px;
       cursor: pointer;
     }
-    details > button:hover { background: #1976d2; }
 
     .active-route {
       animation: pulse 1s infinite alternate;
     }
-    @keyframes pulse { from { stroke-width: 5; opacity: 1; } to { stroke-width: 8; opacity: 0.6; } }
+
+    @keyframes pulse {
+      from { stroke-width: 5; opacity: 1; }
+      to { stroke-width: 8; opacity: 0.6; }
+    }
 
     @media (max-width: 768px) {
-      .menu-container { bottom: 0; left: 0; right: 0; border-top-left-radius: 20px; border-top-right-radius: 20px; }
-      .fullscreen-btn { display: block; position: fixed; bottom: 20px; right: 20px; z-index:1002; }
+      .menu-container {
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(12px);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="logo-container glass">
-    <img src="A6VKOY3fhn0O0jaKpdAT--1--o1p35-removebg-preview.png" alt="Egypt Transport Map" class="logo">
-  </div>
 
-  <div class="top-controls glass">
-    <button onclick="locateMe()">📍 Locate Me</button>
-    <button onclick="toggleTheme()">🌗 Theme</button>
-    <button class="fullscreen-btn" onclick="toggleFullscreen()">🔳 Fullscreen</button>
+  <div class="logo-container glass">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Egyptian_flag.svg/200px-Egyptian_flag.svg.png" alt="Logo">
   </div>
 
   <div id="map"></div>
 
+  <div class="top-right-buttons glass">
+    <button onclick="locateMe()">📍 Locate Me</button>
+    <button onclick="toggleTheme()">🌗 Theme</button>
+  </div>
+
   <div class="menu-container">
-    <!-- Dynamically rendered -->
+    <div class="menu-group glass">
+      <button class="toggle-btn active" id="bus-btn">🚌</button>
+      <div class="menu active" id="bus-menu">
+        <h3>Bus Routes</h3>
+        <details>
+          <summary>Green Bus</summary>
+          <button onclick="showRoute('bus1')">Route A</button>
+        </details>
+      </div>
+    </div>
+
+    <div class="menu-group glass">
+      <button class="toggle-btn" id="metro-btn">🚇</button>
+      <div class="menu" id="metro-menu">
+        <h3>Metro Lines</h3>
+        <details>
+          <summary>Metro Line 1</summary>
+          <button onclick="showRoute('metro1')">Main Route</button>
+        </details>
+      </div>
+    </div>
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const modes = [
-      { key: 'bus', icon: '🚌', title: 'Bus Routes' },
-      { key: 'brt', icon: '🚍', title: 'BRT Lines' },
-      { key: 'microbus', icon: '🛺', title: 'Micro Bus' },
-      { key: 'minibus', icon: '🚐', title: 'Mini Bus' },
-      { key: 'cta', icon: '🚏', title: 'CTA' },
-      { key: 'metro', icon: '🚇', title: 'Metro Lines' },
-      { key: 'hsrail', icon: '🚄', title: 'High‑speed Rail' },
-      { key: 'tram', icon: '🚊', title: 'Tram Lines' },
-      { key: 'monorail', icon: '🚝', title: 'Monorail/LRT' }
-    ];
+    let map = L.map('map').setView([30.0444, 31.2357], 11);
+
+    const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    });
+
+    const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; CARTO'
+    });
+
+    lightLayer.addTo(map);
 
     const routes = {
-      bus1: [...], bus2: [...],
-      brt1: [...], micro1: [...],
-      minibus1: [...], cta1: [...],
-      metro1: [...], metro2: [...],
-      hsrail1: [...], tram1: [...], monorail1: [...]
+      bus1: [
+        [29.947699, 31.0997984],
+        [29.9560282, 31.1056349],
+        [29.9593002, 31.1085532],
+        [29.9710487, 31.1082098],
+        [29.9775915, 31.1125014],
+        [29.982201, 31.1209128],
+        [29.9860669, 31.1257193],
+        [29.9905273, 31.1301825],
+        [29.9903786, 31.1341307],
+        [29.9884458, 31.1399672]
+      ],
+      metro1: [
+        [30.05, 31.20],
+        [30.06, 31.22],
+        [30.07, 31.24]
+      ]
     };
 
     const colors = {
-      bus1: 'green', bus2: 'blue',
-      brt1: 'orange', micro1: 'teal',
-      minibus1: 'purple', cta1: 'pink',
-      metro1: 'red', metro2: 'red',
-      hsrail1: 'black', tram1: 'brown', monorail1: 'gold'
+      bus1: 'green',
+      metro1: 'purple'
     };
 
     let currentLayer = null;
-    const map = L.map('map').setView([30.0444,31.2357],11);
-    const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
-    const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png');
-    lightLayer.addTo(map);
 
-    function showRoute(k) {
+    function showRoute(key) {
       if (currentLayer) map.removeLayer(currentLayer);
-      currentLayer = L.polyline(routes[k], { color: colors[k] || 'gray', weight:5, className:'active-route' })
-        .addTo(map);
+      currentLayer = L.polyline(routes[key], {
+        color: colors[key],
+        weight: 5,
+        className: 'active-route'
+      }).addTo(map);
       map.fitBounds(currentLayer.getBounds());
     }
 
-    function filterCategories(input, menuId) {
-      const term = input.value.toLowerCase();
-      document.querySelectorAll(`#${menuId} details`).forEach(d => {
-        const title = d.querySelector('summary').textContent.toLowerCase();
-        d.style.display = title.includes(term)? 'block':'none';
+    function locateMe() {
+      if (!navigator.geolocation) {
+        alert("Geolocation not supported.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude, longitude } = pos.coords;
+        L.marker([latitude, longitude]).addTo(map).bindPopup("You are here").openPopup();
+        map.setView([latitude, longitude], 14);
+      }, () => {
+        alert("Unable to retrieve location.");
       });
     }
 
-    function toggleMenu(type) {
-      document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
-      document.querySelectorAll('.menu').forEach(m=>m.classList.remove('active'));
-      document.getElementById(type+'-btn').classList.add('active');
-      document.getElementById(type+'-menu').classList.add('active');
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+      if (document.body.classList.contains("dark")) {
+        map.removeLayer(lightLayer);
+        darkLayer.addTo(map);
+      } else {
+        map.removeLayer(darkLayer);
+        lightLayer.addTo(map);
+      }
     }
 
-    function toggleTheme(){
-      document.body.classList.toggle('dark');
-      map.removeLayer(map.hasLayer(lightLayer)? lightLayer: darkLayer);
-      (document.body.classList.contains('dark')? darkLayer: lightLayer).addTo(map);
-    }
-    function toggleFullscreen(){
-      const mc = document.querySelector('.menu-container');
-      mc.style.display = mc.style.display==='none'?'flex':'none';
-    }
-    function locateMe(){
-      navigator.geolocation.getCurrentPosition(p=>{
-        L.marker([p.coords.latitude,p.coords.longitude]).addTo(map)
-          .bindPopup('You are here').openPopup();
-        map.setView([p.coords.latitude,p.coords.longitude],14);
-      }, ()=>alert('Unable to locate'));
-    }
+    document.getElementById("bus-btn").onclick = () => {
+      document.getElementById("bus-menu").classList.add("active");
+      document.getElementById("metro-menu").classList.remove("active");
+      document.getElementById("bus-btn").classList.add("active");
+      document.getElementById("metro-btn").classList.remove("active");
+    };
 
-    function initMenus(){
-      const container = document.querySelector('.menu-container');
-      modes.forEach(m=>{
-        const div = document.createElement('div');
-        div.className = 'menu-group glass';
-        div.innerHTML = `
-          <button class="toggle-btn" id="${m.key}-btn">${m.icon}</button>
-          <div class="menu" id="${m.key}-menu">
-            <h3>${m.title}</h3>
-            <input type="text" placeholder="Search...">
-            <div id="${m.key}-items"></div>
-          </div>`;
-        container.appendChild(div);
-
-        document.querySelector(`#${m.key}-menu input`)
-          .addEventListener('input', e => filterCategories(e.target, `${m.key}-menu`));
-        document.getElementById(`${m.key}-btn`)
-          .addEventListener('click', ()=>toggleMenu(m.key));
-      });
-
-      // Example: populate items
-      addItem('bus','Bus Line 1','bus1');
-      addItem('brt','BRT Line A','brt1');
-      addItem('metro','Metro Line 1','metro1');
-      toggleMenu('bus'); // default
-    }
-
-    function addItem(mode, label, key) {
-      const cont = document.getElementById(`${mode}-items`);
-      const details = document.createElement('details');
-      details.className = 'dropdown';
-      details.innerHTML = `
-        <summary>${label}</summary>
-        <button onclick="showRoute('${key}')">Show Route</button>`;
-      cont.appendChild(details);
-    }
-
-    initMenus();
+    document.getElementById("metro-btn").onclick = () => {
+      document.getElementById("metro-menu").classList.add("active");
+      document.getElementById("bus-menu").classList.remove("active");
+      document.getElementById("metro-btn").classList.add("active");
+      document.getElementById("bus-btn").classList.remove("active");
+    };
   </script>
 </body>
 </html>
