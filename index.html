@@ -18,6 +18,24 @@
       width: 100%;
     }
 
+    .logo-container {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1003;
+      text-align: center;
+    }
+
+    .logo {
+      max-height: 60px;
+      width: auto;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 12px;
+      padding: 4px 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
     .menu-container {
       position: absolute;
       bottom: 20px;
@@ -182,7 +200,6 @@
       color: #eee;
     }
 
-    /* Mobile Bottom Sheet Styles */
     @media (max-width: 768px) {
       .menu-container {
         position: fixed;
@@ -220,6 +237,12 @@
   </style>
 </head>
 <body>
+
+  <!-- ✅ Centered Logo -->
+  <div class="logo-container">
+    <img src="logo.png" alt="Egypt Transport Map Logo" class="logo" />
+  </div>
+
   <div id="map"></div>
 
   <div class="top-right-buttons">
@@ -248,8 +271,8 @@
     </div>
 
     <div class="menu-group">
-      <button class="toggle-btn" id="bus-btn">🚌</button>
-      <div class="menu" id="bus-menu">
+      <button class="toggle-btn active" id="bus-btn">🚌</button>
+      <div class="menu active" id="bus-menu">
         <h3>Bus Routes</h3>
         <input type="text" placeholder="Search Bus..." oninput="filterCategories(this, 'bus-menu')"/>
         <details class="dropdown">
