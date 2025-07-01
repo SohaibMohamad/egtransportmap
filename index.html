@@ -15,13 +15,13 @@
       font-family: 'Rubik', sans-serif;
       background: #f0f0f0;
     }
+    body.dark { background: #121212; color: #eee; }
+
     #map {
       height: 100%;
       width: 100%;
       z-index: 0;
     }
-
-    body.dark { background: #121212; }
 
     .glass {
       background: rgba(255, 255, 255, 0.2);
@@ -36,13 +36,15 @@
       top: 10px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 1002;
+      z-index: 1003;
     }
 
     .logo-container img {
-      height: 80px;
+      max-height: 100px;
       padding: 6px 12px;
+      background: rgba(255,255,255,0.6);
       border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
 
     .top-right-buttons {
@@ -71,6 +73,7 @@
       gap: 15px;
       z-index: 1002;
       overflow-x: auto;
+      padding: 10px;
     }
 
     .menu-group {
@@ -86,6 +89,7 @@
       border: none;
       cursor: pointer;
       border-radius: 12px;
+      background: rgba(255,255,255,0.2);
     }
 
     .toggle-btn.active {
@@ -95,8 +99,8 @@
 
     .menu {
       margin-top: 6px;
-      width: 200px;
-      max-height: 160px;
+      width: 220px;
+      max-height: 180px;
       padding: 10px;
       overflow-y: auto;
       display: none;
@@ -155,8 +159,8 @@
 </head>
 <body>
 
-  <div class="logo-container glass">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Egyptian_flag.svg/200px-Egyptian_flag.svg.png" alt="Logo">
+  <div class="logo-container">
+    <img src="A6VKOY3fhn0O0jaKpdAT--1--o1p35-removebg-preview.png" alt="Egypt Transport Map Logo" />
   </div>
 
   <div id="map"></div>
@@ -167,6 +171,8 @@
   </div>
 
   <div class="menu-container">
+
+    <!-- Bus -->
     <div class="menu-group glass">
       <button class="toggle-btn active" id="bus-btn">🚌</button>
       <div class="menu active" id="bus-menu">
@@ -174,10 +180,16 @@
         <details>
           <summary>Green Bus</summary>
           <button onclick="showRoute('bus1')">Route A</button>
+          <button onclick="showRoute('bus2')">Route B</button>
+        </details>
+        <details>
+          <summary>Red Bus</summary>
+          <button onclick="showRoute('bus3')">Route C</button>
         </details>
       </div>
     </div>
 
+    <!-- Metro -->
     <div class="menu-group glass">
       <button class="toggle-btn" id="metro-btn">🚇</button>
       <div class="menu" id="metro-menu">
@@ -188,11 +200,24 @@
         </details>
       </div>
     </div>
+
+    <!-- BRT -->
+    <div class="menu-group glass">
+      <button class="toggle-btn" id="brt-btn">🚍</button>
+      <div class="menu" id="brt-menu">
+        <h3>BRT Lines</h3>
+        <details>
+          <summary>BRT Express</summary>
+          <button onclick="showRoute('brt1')">Line A</button>
+        </details>
+      </div>
+    </div>
+
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    let map = L.map('map').setView([30.0444, 31.2357], 11);
+    const map = L.map('map').setView([30.0444, 31.2357], 11);
 
     const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
@@ -205,28 +230,19 @@
     lightLayer.addTo(map);
 
     const routes = {
-      bus1: [
-        [29.947699, 31.0997984],
-        [29.9560282, 31.1056349],
-        [29.9593002, 31.1085532],
-        [29.9710487, 31.1082098],
-        [29.9775915, 31.1125014],
-        [29.982201, 31.1209128],
-        [29.9860669, 31.1257193],
-        [29.9905273, 31.1301825],
-        [29.9903786, 31.1341307],
-        [29.9884458, 31.1399672]
-      ],
-      metro1: [
-        [30.05, 31.20],
-        [30.06, 31.22],
-        [30.07, 31.24]
-      ]
+      bus1: [[30.01, 31.1], [30.02, 31.12], [30.03, 31.14]],
+      bus2: [[30.04, 31.11], [30.05, 31.13], [30.06, 31.15]],
+      bus3: [[30.02, 31.09], [30.03, 31.11], [30.04, 31.13]],
+      metro1: [[30.05, 31.2], [30.06, 31.22], [30.07, 31.24]],
+      brt1: [[30.01, 31.18], [30.03, 31.2], [30.05, 31.23]]
     };
 
     const colors = {
       bus1: 'green',
-      metro1: 'purple'
+      bus2: 'blue',
+      bus3: 'red',
+      metro1: 'purple',
+      brt1: 'orange'
     };
 
     let currentLayer = null;
@@ -266,19 +282,18 @@
       }
     }
 
-    document.getElementById("bus-btn").onclick = () => {
-      document.getElementById("bus-menu").classList.add("active");
-      document.getElementById("metro-menu").classList.remove("active");
-      document.getElementById("bus-btn").classList.add("active");
-      document.getElementById("metro-btn").classList.remove("active");
-    };
-
-    document.getElementById("metro-btn").onclick = () => {
-      document.getElementById("metro-menu").classList.add("active");
-      document.getElementById("bus-menu").classList.remove("active");
-      document.getElementById("metro-btn").classList.add("active");
-      document.getElementById("bus-btn").classList.remove("active");
-    };
+    // Toggle menu logic
+    const categories = ['bus', 'metro', 'brt'];
+    categories.forEach(type => {
+      document.getElementById(`${type}-btn`).onclick = () => {
+        categories.forEach(other => {
+          document.getElementById(`${other}-menu`).classList.remove("active");
+          document.getElementById(`${other}-btn`).classList.remove("active");
+        });
+        document.getElementById(`${type}-menu`).classList.add("active");
+        document.getElementById(`${type}-btn`).classList.add("active");
+      };
+    });
   </script>
 </body>
 </html>
