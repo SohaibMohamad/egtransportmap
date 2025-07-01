@@ -85,23 +85,19 @@
       cursor: pointer;
     }
 
-    .icon-menu button:hover {
-      background: rgba(255, 255, 255, 0.5);
-    }
-
     .menu-panel {
       position: absolute;
       bottom: 90px;
       left: 20px;
-      width: 300px;
-      max-height: 60%;
-      overflow-y: auto;
-      z-index: 1003;
+      width: 320px;
+      height: 400px;
       display: none;
       flex-direction: column;
       background: white;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      z-index: 1003;
+      overflow: hidden;
     }
 
     .menu-header-bar {
@@ -127,11 +123,6 @@
       line-height: 28px;
       text-align: center;
       cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .close-btn:hover {
-      background: #c62828;
     }
 
     .search-box {
@@ -149,6 +140,15 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 500;
+      margin: 10px 0 4px;
+      color: #333;
     }
 
     .route-card {
@@ -158,7 +158,6 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      min-height: 80px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
@@ -199,151 +198,156 @@
       direction: rtl;
     }
 
-    .active-route {
-      animation: pulse 1s infinite alternate;
+    .menu-content-panel::-webkit-scrollbar {
+      width: 6px;
     }
 
-    @keyframes pulse {
-      from { stroke-width: 5; opacity: 1; }
-      to { stroke-width: 8; opacity: 0.6; }
+    .menu-content-panel::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
     }
 
     @media (max-width: 768px) {
       .menu-panel {
         width: 90%;
         left: 5%;
+        height: 70vh;
       }
-    }
-
-    .menu-panel::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .menu-panel::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 4px;
     }
   </style>
 </head>
 <body>
 
-  <div class="logo-container">
-    <img src="A6VKOY3fhn0O0jaKpdAT--1--o1p35-removebg-preview.png" alt="Egypt Transport Map Logo" />
+<div class="logo-container">
+  <img src="A6VKOY3fhn0O0jaKpdAT--1--o1p35-removebg-preview.png" alt="Egypt Transport Map Logo" />
+</div>
+
+<div id="map"></div>
+
+<div class="top-right-buttons glass">
+  <button onclick="locateMe()">📍 Locate Me</button>
+  <button onclick="toggleTheme()">🌗 Theme</button>
+</div>
+
+<!-- Menu Icon Buttons -->
+<div class="icon-menu glass">
+  <button onclick="openMenu('bus')">🚌</button>
+  <button onclick="openMenu('metro')">🚇</button>
+  <button onclick="openMenu('brt')">🚍</button>
+  <button onclick="openMenu('cta')">🚆</button>
+</div>
+
+<!-- Route Menu Panel -->
+<div class="menu-panel" id="menu-panel">
+  <div class="menu-header-bar">
+    <span id="menu-title">Transport</span>
+    <button class="close-btn" onclick="closeMenu()">×</button>
   </div>
+  <input type="text" class="search-box" placeholder="Search routes..." oninput="filterRoutes(this.value)" />
+  <div class="menu-content-panel" id="menu-content-panel"></div>
+</div>
 
-  <div id="map"></div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([30.0444, 31.2357], 11);
+  const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+  const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png');
+  lightLayer.addTo(map);
 
-  <div class="top-right-buttons glass">
-    <button onclick="locateMe()">📍 Locate Me</button>
-    <button onclick="toggleTheme()">🌗 Theme</button>
-  </div>
+  const routes = {
+    bus1: [[30.01, 31.1], [30.02, 31.12], [30.03, 31.14]],
+    bus2: [[30.04, 31.11], [30.05, 31.13], [30.06, 31.15]],
+    metro1: [[30.05, 31.2], [30.06, 31.22], [30.07, 31.24]],
+    brt1: [[30.01, 31.18], [30.03, 31.2], [30.05, 31.23]],
+    cta1: [[30.02, 31.19], [30.04, 31.22], [30.06, 31.25]]
+  };
 
-  <!-- Icon Menu -->
-  <div class="icon-menu glass">
-    <button onclick="openMenu('bus')">🚌</button>
-    <button onclick="openMenu('metro')">🚇</button>
-    <button onclick="openMenu('brt')">🚍</button>
-    <button onclick="openMenu('cta')">🚆</button>
-  </div>
+  const colors = {
+    bus1: 'green',
+    bus2: 'green',
+    metro1: 'purple',
+    brt1: 'orange',
+    cta1: 'blue'
+  };
 
-  <!-- Route Menu Panel -->
-  <div class="menu-panel" id="menu-panel">
-    <div class="menu-header-bar">
-      <span id="menu-title">Transport</span>
-      <button class="close-btn" onclick="closeMenu()">×</button>
-    </div>
-    <input type="text" class="search-box" placeholder="Search routes..." oninput="filterRoutes(this.value)" />
-    <div class="menu-content-panel" id="menu-content-panel"></div>
-  </div>
-
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    const map = L.map('map').setView([30.0444, 31.2357], 11);
-    const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
-    const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png');
-    lightLayer.addTo(map);
-
-    const routes = {
-      bus1: [[30.01, 31.1], [30.02, 31.12], [30.03, 31.14]],
-      bus2: [[30.04, 31.11], [30.05, 31.13], [30.06, 31.15]],
-      metro1: [[30.05, 31.2], [30.06, 31.22], [30.07, 31.24]],
-      brt1: [[30.01, 31.18], [30.03, 31.2], [30.05, 31.23]],
-      cta1: [[30.02, 31.19], [30.04, 31.22], [30.06, 31.25]]
-    };
-
-    const colors = {
-      bus1: 'green',
-      bus2: 'green',
-      metro1: 'purple',
-      brt1: 'orange',
-      cta1: 'blue'
-    };
-
-    const routeData = {
-      bus: [
-        { id: 'bus1', name: 'Route A', color: 'green', description: 'رمسيس, عباس العقاد, الجيزة, زويل' },
-        { id: 'bus2', name: 'Route B', color: 'green', description: 'التحرير, زمالك, أكتوبر, المعادي' }
-      ],
-      metro: [
-        { id: 'metro1', name: 'Main Metro', color: 'purple', description: 'حلوان, السيدة زينب, الشهداء, المرج' }
-      ],
-      brt: [
-        { id: 'brt1', name: 'Line A', color: 'orange', description: 'أكتوبر, زايد, الدقي, وسط البلد' }
-      ],
-      cta: [
-        { id: 'cta1', name: 'Express Line', color: 'blue', description: 'رمسيس, مصر الجديدة, المطرية, العاشر' }
+  const routeData = {
+    bus: {
+      'Green Bus': [
+        { id: 'bus1', name: 'G1', color: 'green', description: 'رمسيس, عباس العقاد, الجيزة, زويل' },
+        { id: 'bus2', name: 'G2', color: 'green', description: 'التحرير, زمالك, أكتوبر, المعادي' }
       ]
-    };
+    },
+    metro: {
+      'Line 1': [
+        { id: 'metro1', name: 'Main Metro', color: 'purple', description: 'حلوان, السيدة زينب, الشهداء, المرج' }
+      ]
+    },
+    brt: {
+      'Express Route': [
+        { id: 'brt1', name: 'Line A', color: 'orange', description: 'أكتوبر, زايد, الدقي, وسط البلد' }
+      ]
+    },
+    cta: {
+      'Main Line': [
+        { id: 'cta1', name: 'CTA 1', color: 'blue', description: 'رمسيس, مصر الجديدة, المطرية, العاشر' }
+      ]
+    }
+  };
 
-    let pinnedRoutes = {};
-    let activeRoute = null;
-    let activeRouteLayer = null;
-    let allDisplayedRoutes = [];
+  let pinnedRoutes = {};
+  let activeRoute = null;
+  let activeRouteLayer = null;
 
-    function showSingleRoute(key) {
-      if (activeRoute && !pinnedRoutes[activeRoute] && activeRouteLayer) {
-        map.removeLayer(activeRouteLayer);
-      }
+  function showSingleRoute(key) {
+    if (activeRoute && !pinnedRoutes[activeRoute] && activeRouteLayer) {
+      map.removeLayer(activeRouteLayer);
+    }
+    const color = colors[key];
+    if (!pinnedRoutes[key]) {
+      activeRouteLayer = L.polyline(routes[key], {
+        color,
+        weight: 5,
+        className: 'active-route'
+      }).addTo(map);
+      activeRoute = key;
+      map.fitBounds(activeRouteLayer.getBounds());
+    }
+  }
+
+  function togglePin(btn, key) {
+    const pinned = btn.classList.toggle("pinned");
+    if (pinned) {
       const color = colors[key];
-      if (!pinnedRoutes[key]) {
-        activeRouteLayer = L.polyline(routes[key], {
-          color,
-          weight: 5,
-          className: 'active-route'
-        }).addTo(map);
-        activeRoute = key;
-        map.fitBounds(activeRouteLayer.getBounds());
-      }
+      const line = L.polyline(routes[key], {
+        color,
+        weight: 5,
+        className: 'active-route'
+      }).addTo(map);
+      pinnedRoutes[key] = line;
+    } else {
+      map.removeLayer(pinnedRoutes[key]);
+      delete pinnedRoutes[key];
     }
+  }
 
-    function togglePin(btn, key) {
-      const pinned = btn.classList.toggle("pinned");
-      if (pinned) {
-        const color = colors[key];
-        const line = L.polyline(routes[key], {
-          color,
-          weight: 5,
-          className: 'active-route'
-        }).addTo(map);
-        pinnedRoutes[key] = line;
-      } else {
-        map.removeLayer(pinnedRoutes[key]);
-        delete pinnedRoutes[key];
-      }
-    }
+  function openMenu(type) {
+    const titleMap = {
+      bus: '🚌 Bus',
+      metro: '🚇 Metro',
+      brt: '🚍 BRT',
+      cta: '🚆 CTA Lines'
+    };
+    document.getElementById('menu-title').textContent = titleMap[type];
+    const container = document.getElementById('menu-content-panel');
+    container.innerHTML = '';
+    for (const category in routeData[type]) {
+      const section = document.createElement('div');
+      const title = document.createElement('div');
+      title.className = 'section-title';
+      title.textContent = category;
+      section.appendChild(title);
 
-    function openMenu(mode) {
-      const titleMap = {
-        bus: '🚌 Bus',
-        metro: '🚇 Metro',
-        brt: '🚍 BRT',
-        cta: '🚆 CTA Lines'
-      };
-      document.getElementById('menu-title').textContent = titleMap[mode] || 'Transport';
-      const container = document.getElementById('menu-content-panel');
-      container.innerHTML = '';
-      allDisplayedRoutes = routeData[mode];
-      allDisplayedRoutes.forEach(route => {
+      routeData[type][category].forEach(route => {
         const card = document.createElement('div');
         card.className = 'route-card';
         card.setAttribute('data-name', route.name.toLowerCase());
@@ -365,7 +369,6 @@
         const likeBtn = document.createElement('button');
         likeBtn.textContent = '❤️';
         likeBtn.className = 'like-btn';
-        likeBtn.onclick = () => likeBtn.classList.toggle('liked');
 
         btnRow.appendChild(routeBtn);
         btnRow.appendChild(pinBtn);
@@ -377,49 +380,52 @@
 
         card.appendChild(btnRow);
         card.appendChild(desc);
-        container.appendChild(card);
+        section.appendChild(card);
       });
 
-      document.getElementById('menu-panel').style.display = 'flex';
+      container.appendChild(section);
     }
 
-    function filterRoutes(query) {
-      const value = query.toLowerCase();
-      document.querySelectorAll('.route-card').forEach(card => {
-        const name = card.getAttribute('data-name');
-        const desc = card.getAttribute('data-description');
-        card.style.display = (name.includes(value) || desc.includes(value)) ? 'flex' : 'none';
-      });
-    }
+    document.getElementById('menu-panel').style.display = 'flex';
+  }
 
-    function closeMenu() {
-      document.getElementById('menu-panel').style.display = 'none';
-    }
+  function filterRoutes(query) {
+    const value = query.toLowerCase();
+    document.querySelectorAll('.route-card').forEach(card => {
+      const name = card.getAttribute('data-name');
+      const desc = card.getAttribute('data-description');
+      card.style.display = (name.includes(value) || desc.includes(value)) ? 'flex' : 'none';
+    });
+  }
 
-    function locateMe() {
-      if (!navigator.geolocation) {
-        alert("Geolocation not supported.");
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(pos => {
-        const { latitude, longitude } = pos.coords;
-        L.marker([latitude, longitude]).addTo(map).bindPopup("You are here").openPopup();
-        map.setView([latitude, longitude], 14);
-      }, () => {
-        alert("Unable to retrieve location.");
-      });
-    }
+  function closeMenu() {
+    document.getElementById('menu-panel').style.display = 'none';
+  }
 
-    function toggleTheme() {
-      document.body.classList.toggle("dark");
-      if (document.body.classList.contains("dark")) {
-        map.removeLayer(lightLayer);
-        darkLayer.addTo(map);
-      } else {
-        map.removeLayer(darkLayer);
-        lightLayer.addTo(map);
-      }
+  function locateMe() {
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported.");
+      return;
     }
-  </script>
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude, longitude } = pos.coords;
+      L.marker([latitude, longitude]).addTo(map).bindPopup("You are here").openPopup();
+      map.setView([latitude, longitude], 14);
+    }, () => {
+      alert("Unable to retrieve location.");
+    });
+  }
+
+  function toggleTheme() {
+    document.body.classList.toggle("dark");
+    if (document.body.classList.contains("dark")) {
+      map.removeLayer(lightLayer);
+      darkLayer.addTo(map);
+    } else {
+      map.removeLayer(darkLayer);
+      lightLayer.addTo(map);
+    }
+  }
+</script>
 </body>
 </html>
