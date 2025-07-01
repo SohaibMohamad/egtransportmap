@@ -335,74 +335,88 @@
   }
 
   function openMenu(type) {
-    const titleMap = {
-      bus: '🚌 Bus',
-      metro: '🚇 Metro',
-      brt: '🚍 BRT',
-      cta: '🚆 CTA Lines'
-    };
-    document.getElementById('menu-title').textContent = titleMap[type];
-    const container = document.getElementById('menu-content-panel');
-    container.innerHTML = '';
+  const titleMap = {
+    bus: '🚌 Bus',
+    metro: '🚇 Metro',
+    brt: '🚍 BRT',
+    cta: '🚆 CTA Lines'
+  };
 
-    for (const category in routeData[type]) {
-      const details = document.createElement('details');
-      details.open = false;
-      const summary = document.createElement('summary');
-      summary.textContent = category;
-      details.appendChild(summary);
+  document.getElementById('menu-title').textContent = titleMap[type];
+  document.getElementById('menu-panel').style.display = 'flex';
 
-      routeData[type][category].forEach(route => {
-        const card = document.createElement('div');
-        card.className = 'route-card';
-        card.setAttribute('data-name', route.name.toLowerCase());
-        card.setAttribute('data-description', route.description.toLowerCase());
+  renderRoutes(type); // Initial render
 
-        const btnRow = document.createElement('div');
-        btnRow.className = 'route-btn';
-
-        const routeBtn = document.createElement('button');
-        routeBtn.textContent = route.name;
-        routeBtn.style.background = route.color;
-        routeBtn.onclick = () => showSingleRoute(route.id);
-
-        const pinBtn = document.createElement('button');
-        pinBtn.textContent = '📌';
-        pinBtn.className = 'pin-btn';
-        pinBtn.onclick = () => togglePin(pinBtn, route.id);
-
-        const likeBtn = document.createElement('button');
-        likeBtn.textContent = '❤️';
-        likeBtn.className = 'like-btn';
-
-        btnRow.appendChild(routeBtn);
-        btnRow.appendChild(pinBtn);
-        btnRow.appendChild(likeBtn);
-
-        const desc = document.createElement('div');
-        desc.className = 'route-description';
-        desc.textContent = route.description;
-
-        card.appendChild(btnRow);
-        card.appendChild(desc);
-        details.appendChild(card);
-      });
-
-      container.appendChild(details);
-    }
-
-    document.getElementById('menu-panel').style.display = 'flex';
-  }
-
- function filterRoutes(query) {
-  const value = query.toLowerCase();
-  document.querySelectorAll('.route-card').forEach(card => {
-    const name = card.getAttribute('data-name');
-    const desc = card.getAttribute('data-description');
-    card.style.display = (name.includes(value) || desc.includes(value)) ? 'flex' : 'none';
-  });
+  // Update routes on input
+  document.querySelector('.search-box').oninput = (e) => {
+    renderRoutes(type, e.target.value);
+  };
 }
 
+function renderRoutes(type, filter = '') {
+  const contentPanel = document.getElementById('menu-content-panel');
+  contentPanel.innerHTML = '';
+  const data = routeData[type];
+
+  for (const category in data) {
+    const groupMatches = category.toLowerCase().includes(filter.toLowerCase());
+    const routes = data[category];
+
+    const matchedRoutes = routes.filter(route =>
+      route.name.toLowerCase().includes(filter.toLowerCase()) ||
+      route.description.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    // Skip this group if it doesn't match and has no matching children
+    if (!groupMatches && matchedRoutes.length === 0) continue;
+
+    const details = document.createElement('details');
+    details.open = true;
+
+    const summary = document.createElement('summary');
+    summary.textContent = category;
+    details.appendChild(summary);
+
+    (groupMatches ? routes : matchedRoutes).forEach(route => {
+      const card = document.createElement('div');
+      card.className = 'route-card';
+      card.setAttribute('data-name', route.name.toLowerCase());
+      card.setAttribute('data-description', route.description.toLowerCase());
+
+      const btnRow = document.createElement('div');
+      btnRow.className = 'route-btn';
+
+      const routeBtn = document.createElement('button');
+      routeBtn.textContent = route.name;
+      routeBtn.style.background = route.color;
+      routeBtn.onclick = () => showSingleRoute(route.id);
+
+      const pinBtn = document.createElement('button');
+      pinBtn.textContent = '📌';
+      pinBtn.className = 'pin-btn';
+      pinBtn.onclick = () => togglePin(pinBtn, route.id);
+
+      const likeBtn = document.createElement('button');
+      likeBtn.textContent = '❤️';
+      likeBtn.className = 'like-btn';
+      likeBtn.onclick = () => toggleLike(route); // Optional if you're using likes
+
+      btnRow.appendChild(routeBtn);
+      btnRow.appendChild(pinBtn);
+      btnRow.appendChild(likeBtn);
+
+      const desc = document.createElement('div');
+      desc.className = 'route-description';
+      desc.textContent = route.description;
+
+      card.appendChild(btnRow);
+      card.appendChild(desc);
+      details.appendChild(card);
+    });
+
+    contentPanel.appendChild(details);
+  }
+  
   function closeMenu() {
     document.getElementById('menu-panel').style.display = 'none';
   }
