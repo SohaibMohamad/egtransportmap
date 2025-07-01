@@ -6,7 +6,6 @@
   <title>Egypt Transport Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap" rel="stylesheet" />
-
   <style>
     html, body {
       margin: 0;
@@ -144,7 +143,6 @@
     .route-btn button {
       flex: 1;
       padding: 6px;
-      background: #1976d2;
       color: white;
       border: none;
       border-radius: 6px;
@@ -207,18 +205,18 @@
         <details>
           <summary>Green Bus</summary>
           <div class="route-btn">
-            <button onclick="showSingleRoute('bus1')">Route A</button>
+            <button style="background: green;" onclick="showSingleRoute('bus1')">Route A</button>
             <button class="pin-btn" onclick="togglePin(this, 'bus1')">📌</button>
           </div>
           <div class="route-btn">
-            <button onclick="showSingleRoute('bus2')">Route B</button>
+            <button style="background: green;" onclick="showSingleRoute('bus2')">Route B</button>
             <button class="pin-btn" onclick="togglePin(this, 'bus2')">📌</button>
           </div>
         </details>
         <details>
           <summary>Red Bus</summary>
           <div class="route-btn">
-            <button onclick="showSingleRoute('bus3')">Route C</button>
+            <button style="background: red;" onclick="showSingleRoute('bus3')">Route C</button>
             <button class="pin-btn" onclick="togglePin(this, 'bus3')">📌</button>
           </div>
         </details>
@@ -234,7 +232,7 @@
         <details>
           <summary>Metro Line 1</summary>
           <div class="route-btn">
-            <button onclick="showSingleRoute('metro1')">Main Route</button>
+            <button style="background: purple;" onclick="showSingleRoute('metro1')">Main Route</button>
             <button class="pin-btn" onclick="togglePin(this, 'metro1')">📌</button>
           </div>
         </details>
@@ -250,7 +248,7 @@
         <details>
           <summary>BRT Express</summary>
           <div class="route-btn">
-            <button onclick="showSingleRoute('brt1')">Line A</button>
+            <button style="background: orange;" onclick="showSingleRoute('brt1')">Line A</button>
             <button class="pin-btn" onclick="togglePin(this, 'brt1')">📌</button>
           </div>
         </details>
@@ -275,7 +273,7 @@
 
     const colors = {
       bus1: 'green',
-      bus2: 'blue',
+      bus2: 'green',
       bus3: 'red',
       metro1: 'purple',
       brt1: 'orange'
@@ -283,15 +281,18 @@
 
     const pinnedRoutes = {};
     let activeRoute = null;
+    let activeRouteLayer = null;
 
     function showSingleRoute(key) {
-      if (activeRoute && !pinnedRoutes[activeRoute]) {
-        map.removeLayer(pinnedRoutes[activeRoute] || activeRouteLayer);
+      if (activeRoute && !pinnedRoutes[activeRoute] && activeRouteLayer) {
+        map.removeLayer(activeRouteLayer);
       }
+
+      const color = colors[key];
 
       if (!pinnedRoutes[key]) {
         activeRouteLayer = L.polyline(routes[key], {
-          color: colors[key],
+          color,
           weight: 5,
           className: 'active-route'
         }).addTo(map);
@@ -302,9 +303,11 @@
 
     function togglePin(btn, key) {
       const pinned = btn.classList.toggle("pinned");
+
       if (pinned) {
+        const color = colors[key];
         const line = L.polyline(routes[key], {
-          color: colors[key],
+          color,
           weight: 5,
           className: 'active-route'
         }).addTo(map);
@@ -362,6 +365,10 @@
         document.getElementById(`${type}-btn`).classList.add("active");
       };
     });
+
+    window.onload = () => {
+      document.getElementById("bus-btn").click();
+    };
   </script>
 </body>
 </html>
