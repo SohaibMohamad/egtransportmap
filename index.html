@@ -4,422 +4,245 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Egypt Transport Map</title>
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap" rel="stylesheet" />
-  <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      font-family: 'Rubik', sans-serif;
-    }
 
-    #map {
-      height: 100%;
-      width: 100%;
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Rubik', sans-serif; background: #f0f0f0; }
+    body.dark { background: #121212; color: #eee; }
+
+    #map { width: 100%; height: 100%; }
+
+    .glass {
+      background: rgba(255,255,255,0.3);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 12px;
+    }
+    body.dark .glass {
+      background: rgba(30,30,30,0.5);
+      border: 1px solid rgba(255,255,255,0.2);
     }
 
     .logo-container {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1003;
-      text-align: center;
+      position: absolute; top: 10px; left: 50%;
+      transform: translateX(-50%); z-index: 1003;
+    }
+    .logo {
+      max-height: 90px;
+      padding: 5px 12px;
+      border-radius: 12px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
     }
 
-    .logo {
-      max-height: 120px;
-      width: auto;
-      background: rgba(255, 255, 255, 0.6);
-      border-radius: 12px;
-      padding: 4px 10px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    .top-controls {
+      position: absolute; top: 20px; right: 20px; z-index: 1002;
+      display: flex; flex-direction: column; gap: 10px;
     }
+    .top-controls button {
+      padding: 8px 12px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+    }
+    .fullscreen-btn { display: none; }
 
     .menu-container {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      display: flex;
-      gap: 20px;
-      z-index: 1001;
-      flex-wrap: wrap;
+      position: absolute; bottom: 20px; left: 20px; z-index: 1001;
+      display: flex; gap: 10px;
+      overflow-x: auto; padding: 10px;
     }
 
     .menu-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      display: flex; flex-direction: column; align-items: center;
     }
-
     .toggle-btn {
-      width: 48px;
-      height: 48px;
-      border: none;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.2);
-      backdrop-filter: blur(10px);
-      font-size: 24px;
-      cursor: pointer;
+      width: 48px; height: 48px;
+      border: none; border-radius: 12px;
+      font-size: 24px; cursor: pointer;
       color: #333;
     }
-
     .toggle-btn.active {
-      background: linear-gradient(135deg, #42a5f5, #1e88e5);
+      background: linear-gradient(135deg,#42a5f5,#1e88e5);
       color: white;
     }
 
     .menu {
       margin-top: 8px;
-      width: 260px;
-      height: 100px;
-      padding: 12px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 12px;
-      backdrop-filter: blur(12px);
+      min-width: 200px; max-height: 180px;
+      padding: 8px;
       overflow-y: auto;
       display: none;
-      flex-direction: column;
-      gap: 8px;
-      border: 1px solid rgba(255,255,255,0.3);
+      flex-direction: column; gap: 6px;
     }
-
-    .menu.active {
-      display: flex;
-    }
+    .menu.active { display: flex; }
 
     .menu h3 {
       font-size: 14px;
-      margin: 0;
-      color: #000;
-      background: rgba(255,255,255,0.4);
-      padding: 4px 10px;
-      border-radius: 6px;
       text-align: center;
+      margin-bottom: 6px;
     }
-
     .menu input {
+      padding: 6px; border-radius: 6px;
+      border: none; outline: none;
+    }
+    summary {
+      font-size: 14px;
+      cursor: pointer;
       padding: 6px;
       border-radius: 6px;
-      border: none;
-      outline: none;
-      font-size: 14px;
     }
-
-    .dropdown {
-      background: rgba(255,255,255,0.2);
-      border-radius: 8px;
-    }
-
-    .dropdown summary {
-      list-style: none;
-      font-size: 14px;
-      padding: 6px 10px;
-      background: rgba(255,255,255,0.4);
-      border-radius: 6px;
-      cursor: pointer;
-      color: #333;
-    }
-
-    .dropdown button {
-      width: 100%;
-      padding: 6px 10px;
-      background: #2196f3;
-      color: white;
-      border: none;
-      margin: 3px 0;
-      border-radius: 6px;
-      font-size: 14px;
+    details > button {
+      padding: 6px; font-size: 14px; margin-top: 4px;
+      background: #2196f3; color: white;
+      border: none; border-radius: 6px;
       cursor: pointer;
     }
-
-    .dropdown button:hover {
-      background: #1976d2;
-    }
-
-    .top-right-buttons {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 1002;
-    }
-
-    .top-right-buttons button {
-      padding: 8px 12px;
-      background: rgba(255,255,255,0.4);
-      backdrop-filter: blur(10px);
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      color: #000;
-    }
-
-    .fullscreen-btn {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 1002;
-      padding: 10px 12px;
-      font-size: 20px;
-      background: rgba(255,255,255,0.5);
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      backdrop-filter: blur(10px);
-      cursor: pointer;
-    }
+    details > button:hover { background: #1976d2; }
 
     .active-route {
       animation: pulse 1s infinite alternate;
     }
-
-    @keyframes pulse {
-      from { stroke-width: 5; opacity: 1; }
-      to { stroke-width: 8; opacity: 0.6; }
-    }
-
-    body.dark {
-      background: #121212;
-    }
-
-    body.dark .menu,
-    body.dark .toggle-btn,
-    body.dark .dropdown,
-    body.dark .top-right-buttons button,
-    body.dark .fullscreen-btn {
-      background: rgba(30, 30, 30, 0.5);
-      color: #eee;
-    }
-
-    body.dark .dropdown summary,
-    body.dark .menu h3 {
-      color: #eee;
-    }
+    @keyframes pulse { from { stroke-width: 5; opacity: 1; } to { stroke-width: 8; opacity: 0.6; } }
 
     @media (max-width: 768px) {
-      .menu-container {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(255,255,255,0.2);
-        backdrop-filter: blur(15px);
-        border-top-left-radius: 20px;
-        border-top-right-radius: 20px;
-        padding: 10px;
-        flex-direction: column;
-        max-height: 40%;
-        overflow-y: auto;
-      }
-
-      .fullscreen-btn {
-        display: block;
-      }
-
-      .menu-group {
-        flex: 1;
-      }
-
-      .menu {
-        width: 100%;
-        height: auto;
-      }
-
-      .top-right-buttons {
-        right: 10px;
-        top: 10px;
-      }
+      .menu-container { bottom: 0; left: 0; right: 0; border-top-left-radius: 20px; border-top-right-radius: 20px; }
+      .fullscreen-btn { display: block; position: fixed; bottom: 20px; right: 20px; z-index:1002; }
     }
   </style>
 </head>
 <body>
+  <div class="logo-container glass">
+    <img src="A6VKOY3fhn0O0jaKpdAT--1--o1p35-removebg-preview.png" alt="Egypt Transport Map" class="logo">
+  </div>
 
-  <!-- ✅ Centered Logo -->
-  <div class="logo-container">
-    <img src="A6VKOY3fhn0O0jaKpdAT--1--o1p35-removebg-preview.png" alt="Egypt Transport Map Logo" class="logo" />
+  <div class="top-controls glass">
+    <button onclick="locateMe()">📍 Locate Me</button>
+    <button onclick="toggleTheme()">🌗 Theme</button>
+    <button class="fullscreen-btn" onclick="toggleFullscreen()">🔳 Fullscreen</button>
   </div>
 
   <div id="map"></div>
 
-  <div class="top-right-buttons">
-    <button onclick="locateMe()">📍 Locate Me</button>
-    <button onclick="toggleTheme()">🌗 Theme</button>
-  </div>
-
-  <button class="fullscreen-btn" onclick="toggleFullscreen()">🔳</button>
-
   <div class="menu-container">
-    <div class="menu-group">
-      <button class="toggle-btn" id="metro-btn">🚇</button>
-      <div class="menu" id="metro-menu">
-        <h3>Metro Lines</h3>
-        <input type="text" placeholder="Search Metro..." oninput="filterCategories(this, 'metro-menu')"/>
-        <details class="dropdown">
-          <summary>Metro Line 1</summary>
-          <button onclick="showRoute('metro1')">Direction A</button>
-          <button onclick="showRoute('metro1rev')">Direction B</button>
-        </details>
-        <details class="dropdown">
-          <summary>Metro Line 2</summary>
-          <button onclick="showRoute('metro2')">Main Route</button>
-        </details>
-      </div>
-    </div>
-
-    <div class="menu-group">
-      <button class="toggle-btn active" id="bus-btn">🚌</button>
-      <div class="menu active" id="bus-menu">
-        <h3>Bus Routes</h3>
-        <input type="text" placeholder="Search Bus..." oninput="filterCategories(this, 'bus-menu')"/>
-        <details class="dropdown">
-          <summary>Green Bus</summary>
-          <button onclick="showRoute('bus1')">Route A</button>
-          <button onclick="showRoute('bus1b')">Route B</button>
-        </details>
-        <details class="dropdown">
-          <summary>Blue Bus</summary>
-          <button onclick="showRoute('bus2')">Main Route</button>
-        </details>
-        <details class="dropdown">
-          <summary>Red Bus</summary>
-          <button onclick="showRoute('bus3')">Main Route</button>
-        </details>
-        <details class="dropdown">
-          <summary>Yellow Bus</summary>
-          <button onclick="showRoute('bus4')">Main Route</button>
-        </details>
-      </div>
-    </div>
+    <!-- Dynamically rendered -->
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    let isDarkMode = false;
-    let isFullscreen = false;
-    const map = L.map('map').setView([30.0444, 31.2357], 11);
-
-    const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
-    const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png');
-
-    lightLayer.addTo(map);
+    const modes = [
+      { key: 'bus', icon: '🚌', title: 'Bus Routes' },
+      { key: 'brt', icon: '🚍', title: 'BRT Lines' },
+      { key: 'microbus', icon: '🛺', title: 'Micro Bus' },
+      { key: 'minibus', icon: '🚐', title: 'Mini Bus' },
+      { key: 'cta', icon: '🚏', title: 'CTA' },
+      { key: 'metro', icon: '🚇', title: 'Metro Lines' },
+      { key: 'hsrail', icon: '🚄', title: 'High‑speed Rail' },
+      { key: 'tram', icon: '🚊', title: 'Tram Lines' },
+      { key: 'monorail', icon: '🚝', title: 'Monorail/LRT' }
+    ];
 
     const routes = {
-      metro1: [[30.05, 31.20], [30.06, 31.22], [30.07, 31.24]],
-      metro1rev: [[30.07, 31.24], [30.06, 31.22], [30.05, 31.20]],
-      metro2: [[30.08, 31.23], [30.09, 31.26]],
-      bus1: [[29.947699, 31.0997984],
-  [29.9560282, 31.1056349],
-  [29.9593002, 31.1085532],
-  [29.9710487, 31.1082098],
-  [29.9775915, 31.1125014],
-  [29.982201, 31.1209128],
-  [29.9860669, 31.1257193],
-  [29.9905273, 31.1301825],
-  [29.9903786, 31.1341307],
-  [29.9884458, 31.1399672]],
-      bus1b: [[30.03, 31.18], [30.02, 31.13], [30.01, 31.11]],
-      bus2: [[30.04, 31.12], [30.05, 31.16], [30.06, 31.19]],
-      bus3: [[30.01, 31.14], [30.02, 31.18]],
-      bus4: [[30.02, 31.12], [30.03, 31.17]]
+      bus1: [...], bus2: [...],
+      brt1: [...], micro1: [...],
+      minibus1: [...], cta1: [...],
+      metro1: [...], metro2: [...],
+      hsrail1: [...], tram1: [...], monorail1: [...]
     };
 
     const colors = {
-      metro1: 'purple',
-      metro1rev: 'purple',
-      metro2: 'purple',
-      bus1: 'green',
-      bus1b: 'green',
-      bus2: 'blue',
-      bus3: 'red',
-      bus4: 'gold'
+      bus1: 'green', bus2: 'blue',
+      brt1: 'orange', micro1: 'teal',
+      minibus1: 'purple', cta1: 'pink',
+      metro1: 'red', metro2: 'red',
+      hsrail1: 'black', tram1: 'brown', monorail1: 'gold'
     };
 
     let currentLayer = null;
+    const map = L.map('map').setView([30.0444,31.2357],11);
+    const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+    const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png');
+    lightLayer.addTo(map);
 
-    function showRoute(key) {
+    function showRoute(k) {
       if (currentLayer) map.removeLayer(currentLayer);
-      currentLayer = L.polyline(routes[key], {
-        color: colors[key],
-        weight: 5,
-        className: 'active-route'
-      }).addTo(map);
+      currentLayer = L.polyline(routes[k], { color: colors[k] || 'gray', weight:5, className:'active-route' })
+        .addTo(map);
       map.fitBounds(currentLayer.getBounds());
     }
 
     function filterCategories(input, menuId) {
-      const value = input.value.toLowerCase();
-      const menu = document.getElementById(menuId);
-      const dropdowns = menu.querySelectorAll("details");
-
-      dropdowns.forEach(dropdown => {
-        const summary = dropdown.querySelector("summary");
-        dropdown.style.display = summary.textContent.toLowerCase().includes(value) ? "block" : "none";
+      const term = input.value.toLowerCase();
+      document.querySelectorAll(`#${menuId} details`).forEach(d => {
+        const title = d.querySelector('summary').textContent.toLowerCase();
+        d.style.display = title.includes(term)? 'block':'none';
       });
     }
 
     function toggleMenu(type) {
-      const metroBtn = document.getElementById("metro-btn");
-      const busBtn = document.getElementById("bus-btn");
-      const metroMenu = document.getElementById("metro-menu");
-      const busMenu = document.getElementById("bus-menu");
-
-      if (type === "metro") {
-        metroBtn.classList.add("active");
-        busBtn.classList.remove("active");
-        metroMenu.classList.add("active");
-        busMenu.classList.remove("active");
-      } else {
-        busBtn.classList.add("active");
-        metroBtn.classList.remove("active");
-        busMenu.classList.add("active");
-        metroMenu.classList.remove("active");
-      }
+      document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.menu').forEach(m=>m.classList.remove('active'));
+      document.getElementById(type+'-btn').classList.add('active');
+      document.getElementById(type+'-menu').classList.add('active');
     }
 
-    function toggleTheme() {
-      isDarkMode = !isDarkMode;
-      document.body.classList.toggle("dark");
-
-      if (isDarkMode) {
-        map.removeLayer(lightLayer);
-        darkLayer.addTo(map);
-      } else {
-        map.removeLayer(darkLayer);
-        lightLayer.addTo(map);
-      }
+    function toggleTheme(){
+      document.body.classList.toggle('dark');
+      map.removeLayer(map.hasLayer(lightLayer)? lightLayer: darkLayer);
+      (document.body.classList.contains('dark')? darkLayer: lightLayer).addTo(map);
+    }
+    function toggleFullscreen(){
+      const mc = document.querySelector('.menu-container');
+      mc.style.display = mc.style.display==='none'?'flex':'none';
+    }
+    function locateMe(){
+      navigator.geolocation.getCurrentPosition(p=>{
+        L.marker([p.coords.latitude,p.coords.longitude]).addTo(map)
+          .bindPopup('You are here').openPopup();
+        map.setView([p.coords.latitude,p.coords.longitude],14);
+      }, ()=>alert('Unable to locate'));
     }
 
-    function toggleFullscreen() {
-      const menuContainer = document.querySelector(".menu-container");
-      isFullscreen = !isFullscreen;
-      menuContainer.style.display = isFullscreen ? "none" : "flex";
-    }
+    function initMenus(){
+      const container = document.querySelector('.menu-container');
+      modes.forEach(m=>{
+        const div = document.createElement('div');
+        div.className = 'menu-group glass';
+        div.innerHTML = `
+          <button class="toggle-btn" id="${m.key}-btn">${m.icon}</button>
+          <div class="menu" id="${m.key}-menu">
+            <h3>${m.title}</h3>
+            <input type="text" placeholder="Search...">
+            <div id="${m.key}-items"></div>
+          </div>`;
+        container.appendChild(div);
 
-    function locateMe() {
-      if (!navigator.geolocation) {
-        alert("Geolocation is not supported by your browser.");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(pos => {
-        const { latitude, longitude } = pos.coords;
-        L.marker([latitude, longitude]).addTo(map).bindPopup("You are here").openPopup();
-        map.setView([latitude, longitude], 14);
-      }, () => {
-        alert("Unable to retrieve your location.");
+        document.querySelector(`#${m.key}-menu input`)
+          .addEventListener('input', e => filterCategories(e.target, `${m.key}-menu`));
+        document.getElementById(`${m.key}-btn`)
+          .addEventListener('click', ()=>toggleMenu(m.key));
       });
+
+      // Example: populate items
+      addItem('bus','Bus Line 1','bus1');
+      addItem('brt','BRT Line A','brt1');
+      addItem('metro','Metro Line 1','metro1');
+      toggleMenu('bus'); // default
     }
 
-    document.getElementById("metro-btn").onclick = () => toggleMenu("metro");
-    document.getElementById("bus-btn").onclick = () => toggleMenu("bus");
+    function addItem(mode, label, key) {
+      const cont = document.getElementById(`${mode}-items`);
+      const details = document.createElement('details');
+      details.className = 'dropdown';
+      details.innerHTML = `
+        <summary>${label}</summary>
+        <button onclick="showRoute('${key}')">Show Route</button>`;
+      cont.appendChild(details);
+    }
 
-    window.onload = () => {
-      toggleMenu("bus");
-    };
+    initMenus();
   </script>
 </body>
 </html>
