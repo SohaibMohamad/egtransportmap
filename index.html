@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Egypt Transport Map</title>
+  <title>Vertical Egypt Transport Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap" rel="stylesheet" />
   <style>
@@ -24,11 +24,10 @@
     }
 
     .glass {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(10px);
       border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .logo-container {
@@ -65,66 +64,56 @@
       border-radius: 10px;
     }
 
-    .menu-container {
+    /* === VERTICAL SIDEBAR === */
+    .sidebar {
       position: absolute;
-      bottom: 20px;
+      top: 20px;
       left: 20px;
-      display: flex;
-      gap: 15px;
+      width: 260px;
       z-index: 1002;
-      overflow-x: auto;
-      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .menu-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      width: 100%;
     }
 
-    .toggle-btn {
-      width: 48px;
-      height: 48px;
-      font-size: 24px;
-      border: none;
-      cursor: pointer;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.2);
-    }
-
-    .toggle-btn.active {
-      background: #2196f3;
-      color: white;
-    }
-
-    .menu {
-      margin-top: 6px;
-      width: 240px;
-      height: 130px;
+    .menu-header {
+      width: 100%;
       padding: 10px;
-      display: none;
-      flex-direction: column;
-      overflow-y: auto;
-      gap: 8px;
-    }
-
-    .menu.active {
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
       display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 12px;
     }
 
-    .menu h3 {
-      font-size: 14px;
-      text-align: center;
-      margin-bottom: 6px;
+    .menu-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 0 10px;
     }
 
-    .menu input[type="text"] {
+    .menu-content.open {
+      max-height: 300px;
+      padding: 10px;
+    }
+
+    .menu-content input {
       padding: 6px;
+      font-size: 14px;
       border-radius: 6px;
       border: none;
+      margin-bottom: 6px;
       outline: none;
-      font-size: 14px;
-      margin-bottom: 8px;
     }
 
     details summary {
@@ -153,11 +142,18 @@
     .route-btn .pin-btn {
       background: #ff9800;
       width: 40px;
-      flex: 0;
     }
 
     .pin-btn.pinned {
       background: #4caf50;
+    }
+
+    .menu-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    .menu-content::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 6px;
     }
 
     .active-route {
@@ -170,14 +166,9 @@
     }
 
     @media (max-width: 768px) {
-      .menu-container {
-        left: 0;
-        right: 0;
-        bottom: 0;
-        flex-wrap: wrap;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(12px);
+      .sidebar {
+        left: 10px;
+        width: 95%;
       }
     }
   </style>
@@ -195,14 +186,14 @@
     <button onclick="toggleTheme()">🌗 Theme</button>
   </div>
 
-  <div class="menu-container">
+  <!-- Sidebar -->
+  <div class="sidebar">
     <!-- Bus -->
     <div class="menu-group glass">
-      <button class="toggle-btn active" id="bus-btn">🚌</button>
-      <div class="menu active" id="bus-menu">
-        <h3>Bus Routes</h3>
+      <div class="menu-header" onclick="toggleMenu(this)">🚌 Bus ▼</div>
+      <div class="menu-content" id="bus-menu">
         <input type="text" placeholder="Search Bus..." oninput="filterRoutes(this, 'bus-menu')"/>
-        <details>
+        <details open>
           <summary>Green Bus</summary>
           <div class="route-btn">
             <button style="background: green;" onclick="showSingleRoute('bus1')">Route A</button>
@@ -213,21 +204,13 @@
             <button class="pin-btn" onclick="togglePin(this, 'bus2')">📌</button>
           </div>
         </details>
-        <details>
-          <summary>Red Bus</summary>
-          <div class="route-btn">
-            <button style="background: red;" onclick="showSingleRoute('bus3')">Route C</button>
-            <button class="pin-btn" onclick="togglePin(this, 'bus3')">📌</button>
-          </div>
-        </details>
       </div>
     </div>
 
     <!-- Metro -->
     <div class="menu-group glass">
-      <button class="toggle-btn" id="metro-btn">🚇</button>
-      <div class="menu" id="metro-menu">
-        <h3>Metro Lines</h3>
+      <div class="menu-header" onclick="toggleMenu(this)">🚇 Metro ▼</div>
+      <div class="menu-content" id="metro-menu">
         <input type="text" placeholder="Search Metro..." oninput="filterRoutes(this, 'metro-menu')"/>
         <details>
           <summary>Metro Line 1</summary>
@@ -241,9 +224,8 @@
 
     <!-- BRT -->
     <div class="menu-group glass">
-      <button class="toggle-btn" id="brt-btn">🚍</button>
-      <div class="menu" id="brt-menu">
-        <h3>BRT Lines</h3>
+      <div class="menu-header" onclick="toggleMenu(this)">🚍 BRT ▼</div>
+      <div class="menu-content" id="brt-menu">
         <input type="text" placeholder="Search BRT..." oninput="filterRoutes(this, 'brt-menu')"/>
         <details>
           <summary>BRT Express</summary>
@@ -266,7 +248,6 @@
     const routes = {
       bus1: [[30.01, 31.1], [30.02, 31.12], [30.03, 31.14]],
       bus2: [[30.04, 31.11], [30.05, 31.13], [30.06, 31.15]],
-      bus3: [[30.02, 31.09], [30.03, 31.11], [30.04, 31.13]],
       metro1: [[30.05, 31.2], [30.06, 31.22], [30.07, 31.24]],
       brt1: [[30.01, 31.18], [30.03, 31.2], [30.05, 31.23]]
     };
@@ -274,7 +255,6 @@
     const colors = {
       bus1: 'green',
       bus2: 'green',
-      bus3: 'red',
       metro1: 'purple',
       brt1: 'orange'
     };
@@ -354,20 +334,18 @@
       });
     }
 
-    const categories = ['bus', 'metro', 'brt'];
-    categories.forEach(type => {
-      document.getElementById(`${type}-btn`).onclick = () => {
-        categories.forEach(other => {
-          document.getElementById(`${other}-menu`).classList.remove("active");
-          document.getElementById(`${other}-btn`).classList.remove("active");
-        });
-        document.getElementById(`${type}-menu`).classList.add("active");
-        document.getElementById(`${type}-btn`).classList.add("active");
-      };
-    });
+    function toggleMenu(header) {
+      const content = header.nextElementSibling;
+      const allContents = document.querySelectorAll('.menu-content');
+      allContents.forEach(c => {
+        if (c !== content) c.classList.remove("open");
+      });
+      content.classList.toggle("open");
+    }
 
     window.onload = () => {
-      document.getElementById("bus-btn").click();
+      // Initially open Bus
+      document.querySelectorAll(".menu-header")[0].click();
     };
   </script>
 </body>
