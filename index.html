@@ -64,60 +64,58 @@
       border-radius: 10px;
     }
 
-    .sidebar {
+    /* Icon Grid Menu */
+    .icon-menu {
       position: absolute;
-      top: 60px;
+      bottom: 20px;
       left: 20px;
-      width: 260px;
-      z-index: 1002;
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: repeat(3, 50px);
       gap: 10px;
-    }
-
-    .menu-group {
-      width: 100%;
-    }
-
-    .menu-header {
-      width: 100%;
+      z-index: 1003;
       padding: 10px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-radius: 12px;
     }
 
-    .menu-content {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
+    .icon-menu button {
+      width: 50px;
+      height: 50px;
+      font-size: 22px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+    }
+
+    .icon-menu button:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Menu Panel */
+    .menu-panel {
+      position: absolute;
+      bottom: 90px;
+      left: 20px;
+      width: 280px;
+      max-height: 50%;
+      overflow-y: auto;
+      z-index: 1002;
+      display: none;
+      flex-direction: column;
+    }
+
+    .menu-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      font-weight: bold;
+    }
+
+    .menu-content-panel {
+      padding: 10px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      padding: 0 10px;
-    }
-
-    .menu-content.open {
-      max-height: 300px;
-      padding: 10px;
-    }
-
-    .menu-content input {
-      padding: 6px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: none;
-      margin-bottom: 6px;
-      outline: none;
-    }
-
-    details summary {
-      cursor: pointer;
-      font-size: 14px;
+      gap: 8px;
     }
 
     .route-btn {
@@ -125,7 +123,6 @@
       justify-content: space-between;
       align-items: center;
       gap: 8px;
-      margin-top: 4px;
     }
 
     .route-btn button {
@@ -147,32 +144,6 @@
       background: #4caf50;
     }
 
-    .menu-content::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .menu-content::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .menu-content::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 6px;
-      transition: background 0.3s ease;
-    }
-
-    .menu-content::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 0, 0, 0.4);
-    }
-
-    body.dark .menu-content::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    body.dark .menu-content::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.4);
-    }
-
     .active-route {
       animation: pulse 1s infinite alternate;
     }
@@ -180,13 +151,6 @@
     @keyframes pulse {
       from { stroke-width: 5; opacity: 1; }
       to { stroke-width: 8; opacity: 0.6; }
-    }
-
-    @media (max-width: 768px) {
-      .sidebar {
-        left: 10px;
-        width: 95%;
-      }
     }
   </style>
 </head>
@@ -203,52 +167,21 @@
     <button onclick="toggleTheme()">🌗 Theme</button>
   </div>
 
-  <div class="sidebar">
-    <div class="menu-group glass">
-      <div class="menu-header" onclick="toggleMenu(this)">🚌 Bus ▼</div>
-      <div class="menu-content" id="bus-menu">
-        <input type="text" placeholder="Search Bus..." oninput="filterRoutes(this, 'bus-menu')"/>
-        <details open>
-          <summary>Green Bus</summary>
-          <div class="route-btn">
-            <button style="background: green;" onclick="showSingleRoute('bus1')">Route A</button>
-            <button class="pin-btn" onclick="togglePin(this, 'bus1')">📌</button>
-          </div>
-          <div class="route-btn">
-            <button style="background: green;" onclick="showSingleRoute('bus2')">Route B</button>
-            <button class="pin-btn" onclick="togglePin(this, 'bus2')">📌</button>
-          </div>
-        </details>
-      </div>
-    </div>
+  <!-- Icon Grid Menu -->
+  <div class="icon-menu glass">
+    <button onclick="openMenu('bus')">🚌</button>
+    <button onclick="openMenu('metro')">🚇</button>
+    <button onclick="openMenu('brt')">🚍</button>
+    <!-- Add up to 10 here -->
+  </div>
 
-    <div class="menu-group glass">
-      <div class="menu-header" onclick="toggleMenu(this)">🚇 Metro ▼</div>
-      <div class="menu-content" id="metro-menu">
-        <input type="text" placeholder="Search Metro..." oninput="filterRoutes(this, 'metro-menu')"/>
-        <details>
-          <summary>Metro Line 1</summary>
-          <div class="route-btn">
-            <button style="background: purple;" onclick="showSingleRoute('metro1')">Main Route</button>
-            <button class="pin-btn" onclick="togglePin(this, 'metro1')">📌</button>
-          </div>
-        </details>
-      </div>
+  <!-- Panel that changes based on selected mode -->
+  <div class="menu-panel glass" id="menu-panel">
+    <div class="menu-header-bar">
+      <span id="menu-title">Transport</span>
+      <button onclick="closeMenu()">✖</button>
     </div>
-
-    <div class="menu-group glass">
-      <div class="menu-header" onclick="toggleMenu(this)">🚍 BRT ▼</div>
-      <div class="menu-content" id="brt-menu">
-        <input type="text" placeholder="Search BRT..." oninput="filterRoutes(this, 'brt-menu')"/>
-        <details>
-          <summary>BRT Express</summary>
-          <div class="route-btn">
-            <button style="background: orange;" onclick="showSingleRoute('brt1')">Line A</button>
-            <button class="pin-btn" onclick="togglePin(this, 'brt1')">📌</button>
-          </div>
-        </details>
-      </div>
-    </div>
+    <div class="menu-content-panel" id="menu-content-panel"></div>
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -336,28 +269,64 @@
       }
     }
 
-    function filterRoutes(input, menuId) {
-      const value = input.value.toLowerCase();
-      const menu = document.getElementById(menuId);
-      const details = menu.querySelectorAll("details");
+    function openMenu(mode) {
+      const title = {
+        bus: '🚌 Bus',
+        metro: '🚇 Metro',
+        brt: '🚍 BRT'
+        // Add more here
+      };
 
-      details.forEach(section => {
-        const summaryText = section.querySelector("summary").textContent.toLowerCase();
-        section.style.display = summaryText.includes(value) ? "block" : "none";
+      const routesByMode = {
+        bus: [
+          { id: 'bus1', name: 'Route A', color: 'green' },
+          { id: 'bus2', name: 'Route B', color: 'green' }
+        ],
+        metro: [
+          { id: 'metro1', name: 'Main Route', color: 'purple' }
+        ],
+        brt: [
+          { id: 'brt1', name: 'Line A', color: 'orange' }
+        ]
+        // Add more here
+      };
+
+      const panel = document.getElementById('menu-panel');
+      const content = document.getElementById('menu-content-panel');
+      const menuTitle = document.getElementById('menu-title');
+
+      menuTitle.textContent = title[mode] || 'Transport';
+      content.innerHTML = '';
+
+      routesByMode[mode].forEach(route => {
+        const div = document.createElement('div');
+        div.className = 'route-btn';
+
+        const routeBtn = document.createElement('button');
+        routeBtn.style.background = route.color;
+        routeBtn.textContent = route.name;
+        routeBtn.onclick = () => showSingleRoute(route.id);
+
+        const pinBtn = document.createElement('button');
+        pinBtn.className = 'pin-btn';
+        pinBtn.textContent = '📌';
+        pinBtn.onclick = () => togglePin(pinBtn, route.id);
+
+        div.appendChild(routeBtn);
+        div.appendChild(pinBtn);
+        content.appendChild(div);
       });
+
+      panel.style.display = 'flex';
     }
 
-    function toggleMenu(header) {
-      const content = header.nextElementSibling;
-      const allContents = document.querySelectorAll('.menu-content');
-      allContents.forEach(c => {
-        if (c !== content) c.classList.remove("open");
-      });
-      content.classList.toggle("open");
+    function closeMenu() {
+      document.getElementById('menu-panel').style.display = 'none';
     }
 
+    // Open first mode by default if needed
     window.onload = () => {
-      document.querySelectorAll(".menu-header")[0].click();
+      // openMenu('bus');
     };
   </script>
 </body>
