@@ -9,18 +9,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
+      margin: 0;
       height: 100%;
       font-family: 'Rubik', sans-serif;
       background: #f0f0f0;
     }
+
     body.dark { background: #121212; color: #eee; }
 
     #map {
       height: 100%;
       width: 100%;
-      z-index: 0;
     }
 
     .glass {
@@ -99,12 +99,12 @@
 
     .menu {
       margin-top: 6px;
-      width: 220px;
-      max-height: 180px;
+      width: 240px;
+      height: 220px;
       padding: 10px;
-      overflow-y: auto;
       display: none;
       flex-direction: column;
+      overflow-y: auto;
       gap: 8px;
     }
 
@@ -115,6 +115,16 @@
     .menu h3 {
       font-size: 14px;
       text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .menu input[type="text"] {
+      padding: 6px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      margin-bottom: 8px;
     }
 
     details summary {
@@ -122,16 +132,31 @@
       font-size: 14px;
     }
 
-    details button {
-      padding: 6px;
+    .route-btn {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
       margin-top: 4px;
-      width: 100%;
-      font-size: 14px;
+    }
+
+    .route-btn button {
+      flex: 1;
+      padding: 6px;
       background: #1976d2;
       color: white;
       border: none;
       border-radius: 6px;
+      font-size: 13px;
       cursor: pointer;
+    }
+
+    .route-btn .pin-btn {
+      background: #ff9800;
+    }
+
+    .pin-btn.pinned {
+      background: #4caf50;
     }
 
     .active-route {
@@ -148,7 +173,6 @@
         left: 0;
         right: 0;
         bottom: 0;
-        padding: 12px;
         flex-wrap: wrap;
         justify-content: center;
         background: rgba(255, 255, 255, 0.2);
@@ -177,14 +201,24 @@
       <button class="toggle-btn active" id="bus-btn">🚌</button>
       <div class="menu active" id="bus-menu">
         <h3>Bus Routes</h3>
+        <input type="text" placeholder="Search Bus..." oninput="filterRoutes(this, 'bus-menu')"/>
         <details>
           <summary>Green Bus</summary>
-          <button onclick="showRoute('bus1')">Route A</button>
-          <button onclick="showRoute('bus2')">Route B</button>
+          <div class="route-btn">
+            <button onclick="fitRoute('bus1')">Route A</button>
+            <button class="pin-btn" onclick="togglePin(this, 'bus1')">📌</button>
+          </div>
+          <div class="route-btn">
+            <button onclick="fitRoute('bus2')">Route B</button>
+            <button class="pin-btn" onclick="togglePin(this, 'bus2')">📌</button>
+          </div>
         </details>
         <details>
           <summary>Red Bus</summary>
-          <button onclick="showRoute('bus3')">Route C</button>
+          <div class="route-btn">
+            <button onclick="fitRoute('bus3')">Route C</button>
+            <button class="pin-btn" onclick="togglePin(this, 'bus3')">📌</button>
+          </div>
         </details>
       </div>
     </div>
@@ -194,9 +228,13 @@
       <button class="toggle-btn" id="metro-btn">🚇</button>
       <div class="menu" id="metro-menu">
         <h3>Metro Lines</h3>
+        <input type="text" placeholder="Search Metro..." oninput="filterRoutes(this, 'metro-menu')"/>
         <details>
           <summary>Metro Line 1</summary>
-          <button onclick="showRoute('metro1')">Main Route</button>
+          <div class="route-btn">
+            <button onclick="fitRoute('metro1')">Main Route</button>
+            <button class="pin-btn" onclick="togglePin(this, 'metro1')">📌</button>
+          </div>
         </details>
       </div>
     </div>
@@ -206,9 +244,13 @@
       <button class="toggle-btn" id="brt-btn">🚍</button>
       <div class="menu" id="brt-menu">
         <h3>BRT Lines</h3>
+        <input type="text" placeholder="Search BRT..." oninput="filterRoutes(this, 'brt-menu')"/>
         <details>
           <summary>BRT Express</summary>
-          <button onclick="showRoute('brt1')">Line A</button>
+          <div class="route-btn">
+            <button onclick="fitRoute('brt1')">Line A</button>
+            <button class="pin-btn" onclick="togglePin(this, 'brt1')">📌</button>
+          </div>
         </details>
       </div>
     </div>
@@ -218,15 +260,8 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
     const map = L.map('map').setView([30.0444, 31.2357], 11);
-
-    const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    });
-
-    const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; CARTO'
-    });
-
+    const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+    const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png');
     lightLayer.addTo(map);
 
     const routes = {
@@ -245,16 +280,42 @@
       brt1: 'orange'
     };
 
-    let currentLayer = null;
+    const activeRoutes = {};
 
-    function showRoute(key) {
-      if (currentLayer) map.removeLayer(currentLayer);
-      currentLayer = L.polyline(routes[key], {
-        color: colors[key],
-        weight: 5,
-        className: 'active-route'
-      }).addTo(map);
-      map.fitBounds(currentLayer.getBounds());
+    function togglePin(button, key) {
+      const pinned = button.classList.toggle("pinned");
+
+      if (pinned) {
+        const line = L.polyline(routes[key], {
+          color: colors[key],
+          weight: 5,
+          className: 'active-route'
+        }).addTo(map);
+        activeRoutes[key] = line;
+      } else {
+        map.removeLayer(activeRoutes[key]);
+        delete activeRoutes[key];
+      }
+    }
+
+    function fitRoute(key) {
+      if (activeRoutes[key]) {
+        map.fitBounds(activeRoutes[key].getBounds());
+      } else {
+        const tempLine = L.polyline(routes[key]);
+        map.fitBounds(tempLine.getBounds());
+      }
+    }
+
+    function filterRoutes(input, menuId) {
+      const value = input.value.toLowerCase();
+      const menu = document.getElementById(menuId);
+      const details = menu.querySelectorAll("details");
+
+      details.forEach(section => {
+        const summaryText = section.querySelector("summary").textContent.toLowerCase();
+        section.style.display = summaryText.includes(value) ? "block" : "none";
+      });
     }
 
     function locateMe() {
@@ -282,7 +343,7 @@
       }
     }
 
-    // Toggle menu logic
+    // Toggle buttons
     const categories = ['bus', 'metro', 'brt'];
     categories.forEach(type => {
       document.getElementById(`${type}-btn`).onclick = () => {
