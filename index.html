@@ -64,7 +64,6 @@
       border-radius: 10px;
     }
 
-    /* Icon Grid Menu */
     .icon-menu {
       position: absolute;
       bottom: 20px;
@@ -90,13 +89,12 @@
       background: rgba(255, 255, 255, 0.4);
     }
 
-    /* Menu Panel */
     .menu-panel {
       position: absolute;
       bottom: 90px;
       left: 20px;
-      width: 280px;
-      max-height: 50%;
+      width: 300px;
+      max-height: 60%;
       overflow-y: auto;
       z-index: 1002;
       display: none;
@@ -115,14 +113,33 @@
       padding: 10px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
+    }
+
+    .search-box {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+
+    .route-card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
 
     .route-btn {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .route-btn button {
@@ -136,12 +153,23 @@
     }
 
     .route-btn .pin-btn {
-      background: #ff9800;
       width: 40px;
+      background: #ff9800;
+    }
+
+    .route-btn .like-btn {
+      width: 40px;
+      background: #e91e63;
     }
 
     .pin-btn.pinned {
       background: #4caf50;
+    }
+
+    .route-description {
+      font-size: 12px;
+      color: #ddd;
+      direction: rtl;
     }
 
     .active-route {
@@ -172,15 +200,16 @@
     <button onclick="openMenu('bus')">🚌</button>
     <button onclick="openMenu('metro')">🚇</button>
     <button onclick="openMenu('brt')">🚍</button>
-    <!-- Add up to 10 here -->
+    <button onclick="openMenu('cta')">🚆</button>
   </div>
 
-  <!-- Panel that changes based on selected mode -->
+  <!-- Floating Panel -->
   <div class="menu-panel glass" id="menu-panel">
     <div class="menu-header-bar">
       <span id="menu-title">Transport</span>
       <button onclick="closeMenu()">✖</button>
     </div>
+    <input type="text" class="search-box" placeholder="Search routes..." oninput="filterRoutes(this.value)" />
     <div class="menu-content-panel" id="menu-content-panel"></div>
   </div>
 
@@ -195,19 +224,38 @@
       bus1: [[30.01, 31.1], [30.02, 31.12], [30.03, 31.14]],
       bus2: [[30.04, 31.11], [30.05, 31.13], [30.06, 31.15]],
       metro1: [[30.05, 31.2], [30.06, 31.22], [30.07, 31.24]],
-      brt1: [[30.01, 31.18], [30.03, 31.2], [30.05, 31.23]]
+      brt1: [[30.01, 31.18], [30.03, 31.2], [30.05, 31.23]],
+      cta1: [[30.02, 31.19], [30.04, 31.22], [30.06, 31.25]]
     };
 
     const colors = {
       bus1: 'green',
       bus2: 'green',
       metro1: 'purple',
-      brt1: 'orange'
+      brt1: 'orange',
+      cta1: 'blue'
     };
 
     const pinnedRoutes = {};
     let activeRoute = null;
     let activeRouteLayer = null;
+    let allDisplayedRoutes = [];
+
+    const routeData = {
+      bus: [
+        { id: 'bus1', name: 'Route A', color: 'green', description: 'رمسيس, عباس العقاد, الجيزة, زويل' },
+        { id: 'bus2', name: 'Route B', color: 'green', description: 'التحرير, زمالك, أكتوبر, المعادي' }
+      ],
+      metro: [
+        { id: 'metro1', name: 'Main Metro', color: 'purple', description: 'حلوان, السيدة زينب, الشهداء, المرج' }
+      ],
+      brt: [
+        { id: 'brt1', name: 'Line A', color: 'orange', description: 'أكتوبر, زايد, الدقي, وسط البلد' }
+      ],
+      cta: [
+        { id: 'cta1', name: 'Express Line', color: 'blue', description: 'رمسيس, مصر الجديدة, المطرية, العاشر' }
+      ]
+    };
 
     function showSingleRoute(key) {
       if (activeRoute && !pinnedRoutes[activeRoute] && activeRouteLayer) {
@@ -215,7 +263,6 @@
       }
 
       const color = colors[key];
-
       if (!pinnedRoutes[key]) {
         activeRouteLayer = L.polyline(routes[key], {
           color,
@@ -229,7 +276,6 @@
 
     function togglePin(btn, key) {
       const pinned = btn.classList.toggle("pinned");
-
       if (pinned) {
         const color = colors[key];
         const line = L.polyline(routes[key], {
@@ -242,6 +288,77 @@
         map.removeLayer(pinnedRoutes[key]);
         delete pinnedRoutes[key];
       }
+    }
+
+    function openMenu(mode) {
+      const titleMap = {
+        bus: '🚌 Bus',
+        metro: '🚇 Metro',
+        brt: '🚍 BRT',
+        cta: '🚆 CTA Lines'
+      };
+
+      document.getElementById('menu-title').textContent = titleMap[mode] || 'Transport';
+      const container = document.getElementById('menu-content-panel');
+      container.innerHTML = '';
+
+      allDisplayedRoutes = routeData[mode]; // Save for search filter
+
+      allDisplayedRoutes.forEach(route => {
+        const card = document.createElement('div');
+        card.className = 'route-card';
+        card.setAttribute('data-name', route.name.toLowerCase());
+        card.setAttribute('data-description', route.description.toLowerCase());
+
+        const btnRow = document.createElement('div');
+        btnRow.className = 'route-btn';
+
+        const routeBtn = document.createElement('button');
+        routeBtn.textContent = route.name;
+        routeBtn.style.background = route.color;
+        routeBtn.onclick = () => showSingleRoute(route.id);
+
+        const pinBtn = document.createElement('button');
+        pinBtn.textContent = '📌';
+        pinBtn.className = 'pin-btn';
+        pinBtn.onclick = () => togglePin(pinBtn, route.id);
+
+        const likeBtn = document.createElement('button');
+        likeBtn.textContent = '❤️';
+        likeBtn.className = 'like-btn';
+        likeBtn.onclick = () => likeBtn.classList.toggle('liked');
+
+        btnRow.appendChild(routeBtn);
+        btnRow.appendChild(pinBtn);
+        btnRow.appendChild(likeBtn);
+
+        const desc = document.createElement('div');
+        desc.className = 'route-description';
+        desc.textContent = route.description;
+
+        card.appendChild(btnRow);
+        card.appendChild(desc);
+        container.appendChild(card);
+      });
+
+      document.getElementById('menu-panel').style.display = 'flex';
+    }
+
+    function filterRoutes(query) {
+      const value = query.toLowerCase();
+      document.querySelectorAll('.route-card').forEach(card => {
+        const name = card.getAttribute('data-name');
+        const desc = card.getAttribute('data-description');
+        if (name.includes(value) || desc.includes(value)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function closeMenu() {
+      document.getElementById('menu-panel').style.display = 'none';
     }
 
     function locateMe() {
@@ -268,66 +385,6 @@
         lightLayer.addTo(map);
       }
     }
-
-    function openMenu(mode) {
-      const title = {
-        bus: '🚌 Bus',
-        metro: '🚇 Metro',
-        brt: '🚍 BRT'
-        // Add more here
-      };
-
-      const routesByMode = {
-        bus: [
-          { id: 'bus1', name: 'Route A', color: 'green' },
-          { id: 'bus2', name: 'Route B', color: 'green' }
-        ],
-        metro: [
-          { id: 'metro1', name: 'Main Route', color: 'purple' }
-        ],
-        brt: [
-          { id: 'brt1', name: 'Line A', color: 'orange' }
-        ]
-        // Add more here
-      };
-
-      const panel = document.getElementById('menu-panel');
-      const content = document.getElementById('menu-content-panel');
-      const menuTitle = document.getElementById('menu-title');
-
-      menuTitle.textContent = title[mode] || 'Transport';
-      content.innerHTML = '';
-
-      routesByMode[mode].forEach(route => {
-        const div = document.createElement('div');
-        div.className = 'route-btn';
-
-        const routeBtn = document.createElement('button');
-        routeBtn.style.background = route.color;
-        routeBtn.textContent = route.name;
-        routeBtn.onclick = () => showSingleRoute(route.id);
-
-        const pinBtn = document.createElement('button');
-        pinBtn.className = 'pin-btn';
-        pinBtn.textContent = '📌';
-        pinBtn.onclick = () => togglePin(pinBtn, route.id);
-
-        div.appendChild(routeBtn);
-        div.appendChild(pinBtn);
-        content.appendChild(div);
-      });
-
-      panel.style.display = 'flex';
-    }
-
-    function closeMenu() {
-      document.getElementById('menu-panel').style.display = 'none';
-    }
-
-    // Open first mode by default if needed
-    window.onload = () => {
-      // openMenu('bus');
-    };
   </script>
 </body>
 </html>
