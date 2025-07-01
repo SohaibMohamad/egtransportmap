@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Egypt Transport Map</title>
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap" rel="stylesheet" />
 
@@ -13,10 +12,12 @@
       margin: 0;
       height: 100%;
       font-family: 'Rubik', sans-serif;
-      background: #f0f0f0;
     }
 
-    body.dark { background: #121212; color: #eee; }
+    body.dark {
+      background: #121212;
+      color: #eee;
+    }
 
     #map {
       height: 100%;
@@ -100,7 +101,7 @@
     .menu {
       margin-top: 6px;
       width: 240px;
-      height: 220px;
+      height: 130px;
       padding: 10px;
       display: none;
       flex-direction: column;
@@ -153,6 +154,8 @@
 
     .route-btn .pin-btn {
       background: #ff9800;
+      width: 40px;
+      flex: 0;
     }
 
     .pin-btn.pinned {
@@ -195,7 +198,6 @@
   </div>
 
   <div class="menu-container">
-
     <!-- Bus -->
     <div class="menu-group glass">
       <button class="toggle-btn active" id="bus-btn">🚌</button>
@@ -205,18 +207,18 @@
         <details>
           <summary>Green Bus</summary>
           <div class="route-btn">
-            <button onclick="fitRoute('bus1')">Route A</button>
+            <button onclick="showSingleRoute('bus1')">Route A</button>
             <button class="pin-btn" onclick="togglePin(this, 'bus1')">📌</button>
           </div>
           <div class="route-btn">
-            <button onclick="fitRoute('bus2')">Route B</button>
+            <button onclick="showSingleRoute('bus2')">Route B</button>
             <button class="pin-btn" onclick="togglePin(this, 'bus2')">📌</button>
           </div>
         </details>
         <details>
           <summary>Red Bus</summary>
           <div class="route-btn">
-            <button onclick="fitRoute('bus3')">Route C</button>
+            <button onclick="showSingleRoute('bus3')">Route C</button>
             <button class="pin-btn" onclick="togglePin(this, 'bus3')">📌</button>
           </div>
         </details>
@@ -232,7 +234,7 @@
         <details>
           <summary>Metro Line 1</summary>
           <div class="route-btn">
-            <button onclick="fitRoute('metro1')">Main Route</button>
+            <button onclick="showSingleRoute('metro1')">Main Route</button>
             <button class="pin-btn" onclick="togglePin(this, 'metro1')">📌</button>
           </div>
         </details>
@@ -248,13 +250,12 @@
         <details>
           <summary>BRT Express</summary>
           <div class="route-btn">
-            <button onclick="fitRoute('brt1')">Line A</button>
+            <button onclick="showSingleRoute('brt1')">Line A</button>
             <button class="pin-btn" onclick="togglePin(this, 'brt1')">📌</button>
           </div>
         </details>
       </div>
     </div>
-
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -280,42 +281,38 @@
       brt1: 'orange'
     };
 
-    const activeRoutes = {};
+    const pinnedRoutes = {};
+    let activeRoute = null;
 
-    function togglePin(button, key) {
-      const pinned = button.classList.toggle("pinned");
+    function showSingleRoute(key) {
+      if (activeRoute && !pinnedRoutes[activeRoute]) {
+        map.removeLayer(pinnedRoutes[activeRoute] || activeRouteLayer);
+      }
 
+      if (!pinnedRoutes[key]) {
+        activeRouteLayer = L.polyline(routes[key], {
+          color: colors[key],
+          weight: 5,
+          className: 'active-route'
+        }).addTo(map);
+        activeRoute = key;
+        map.fitBounds(activeRouteLayer.getBounds());
+      }
+    }
+
+    function togglePin(btn, key) {
+      const pinned = btn.classList.toggle("pinned");
       if (pinned) {
         const line = L.polyline(routes[key], {
           color: colors[key],
           weight: 5,
           className: 'active-route'
         }).addTo(map);
-        activeRoutes[key] = line;
+        pinnedRoutes[key] = line;
       } else {
-        map.removeLayer(activeRoutes[key]);
-        delete activeRoutes[key];
+        map.removeLayer(pinnedRoutes[key]);
+        delete pinnedRoutes[key];
       }
-    }
-
-    function fitRoute(key) {
-      if (activeRoutes[key]) {
-        map.fitBounds(activeRoutes[key].getBounds());
-      } else {
-        const tempLine = L.polyline(routes[key]);
-        map.fitBounds(tempLine.getBounds());
-      }
-    }
-
-    function filterRoutes(input, menuId) {
-      const value = input.value.toLowerCase();
-      const menu = document.getElementById(menuId);
-      const details = menu.querySelectorAll("details");
-
-      details.forEach(section => {
-        const summaryText = section.querySelector("summary").textContent.toLowerCase();
-        section.style.display = summaryText.includes(value) ? "block" : "none";
-      });
     }
 
     function locateMe() {
@@ -343,7 +340,17 @@
       }
     }
 
-    // Toggle buttons
+    function filterRoutes(input, menuId) {
+      const value = input.value.toLowerCase();
+      const menu = document.getElementById(menuId);
+      const details = menu.querySelectorAll("details");
+
+      details.forEach(section => {
+        const summaryText = section.querySelector("summary").textContent.toLowerCase();
+        section.style.display = summaryText.includes(value) ? "block" : "none";
+      });
+    }
+
     const categories = ['bus', 'metro', 'brt'];
     categories.forEach(type => {
       document.getElementById(`${type}-btn`).onclick = () => {
