@@ -209,6 +209,73 @@
       border-radius: 4px;
     }
 
+    .like-btn.liked {
+     background: #a31545;
+    }
+
+    function showLikedRoutes() {
+  document.getElementById('menu-title').textContent = '❤️ Liked Routes';
+  document.getElementById('menu-panel').style.display = 'flex';
+  renderLikedRoutes();
+}
+
+function renderLikedRoutes() {
+  const contentPanel = document.getElementById('menu-content-panel');
+  contentPanel.innerHTML = '';
+  const routesArr = Object.values(likedRoutes);
+
+  if (routesArr.length === 0) {
+    contentPanel.innerHTML = '<div style="padding:20px;text-align:center;">No liked routes yet.</div>';
+    return;
+  }
+
+  const details = document.createElement('details');
+  details.open = true;
+  const summary = document.createElement('summary');
+  summary.textContent = "Liked";
+  details.appendChild(summary);
+
+  routesArr.forEach(route => {
+    const card = document.createElement('div');
+    card.className = 'route-card';
+
+    const btnRow = document.createElement('div');
+    btnRow.className = 'route-btn';
+
+    const routeBtn = document.createElement('button');
+    routeBtn.textContent = route.name;
+    routeBtn.style.background = route.color;
+    routeBtn.onclick = () => showSingleRoute(route.id);
+
+    const pinBtn = document.createElement('button');
+    pinBtn.textContent = '📌';
+    pinBtn.className = 'pin-btn';
+    pinBtn.onclick = () => togglePin(pinBtn, route.id);
+
+    const likeBtn = document.createElement('button');
+    likeBtn.textContent = '❤️';
+    likeBtn.className = 'like-btn liked';
+    likeBtn.onclick = () => {
+      toggleLike(route);
+      renderLikedRoutes(); // Refresh after unlike
+    };
+
+    btnRow.appendChild(routeBtn);
+    btnRow.appendChild(pinBtn);
+    btnRow.appendChild(likeBtn);
+
+    const desc = document.createElement('div');
+    desc.className = 'route-description';
+    desc.textContent = route.description;
+
+    card.appendChild(btnRow);
+    card.appendChild(desc);
+    details.appendChild(card);
+  });
+
+  contentPanel.appendChild(details);
+}
+
     @media (max-width: 768px) {
       .menu-panel {
         width: 90%;
@@ -228,6 +295,7 @@
 <div class="top-right-buttons glass">
   <button onclick="locateMe()">📍 Locate Me</button>
   <button onclick="toggleTheme()">🌗 Theme</button>
+  <button onclick="showLikedRoutes()">❤️ Liked Routes</button>
 </div>
 
 <div class="icon-menu glass">
@@ -278,6 +346,7 @@
   const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
   const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png');
   lightLayer.addTo(map);
+  let likedRoutes = {};
 
   const routes = {
     bus1: [[29.92431, 31.03046], [29.92777, 31.03586], [29.92917, 31.03846], [29.92911, 31.0395], [29.92951, 31.04045], [29.93076, 31.04192], [29.93165, 31.04257], [29.93242, 31.04326], [29.93238, 31.04358], [29.93222, 31.04393], [29.93217, 31.0441], [29.93223, 31.04438], [29.93225, 31.04472], [29.93266, 31.04455], [29.93297, 31.0445], [29.93313, 31.04452], [29.93351, 31.04478], [29.93602, 31.04853], [29.94228, 31.05821], [29.94492, 31.06231], [29.94632, 31.0645], [29.94786, 31.06683], [29.94818, 31.06734], [29.95287, 31.07461], [29.95366, 31.07572], [29.95519, 31.07696], [29.95573, 31.07864], [29.95448, 31.08104], [29.94958, 31.09276], [29.94734, 31.09817], [29.94683, 31.09941], [29.9455, 31.10269], [29.94498, 31.10323], [29.94426, 31.1033], [29.94377, 31.10278], [29.94367, 31.10217], [29.9439, 31.10158], [29.94432, 31.10129], [29.94534, 31.1015], [29.94876, 31.10341], [29.9549, 31.1058], [29.95784, 31.1078], [29.95979, 31.10868], [29.96343, 31.10896], [29.96653, 31.10891], [29.96973, 31.10858], [29.97129, 31.10894], [29.97607, 31.11164], [29.97872, 31.11453], [29.98076, 31.11837], [29.98244, 31.12176], [29.98415, 31.12395], [29.98782, 31.12805], [29.98802, 31.12975], [29.98747, 31.13142], [29.98713, 31.13293], [29.98651, 31.13389], [29.98577, 31.13464], [29.98487, 31.13609], [29.98581, 31.13851], [29.98709, 31.14117], [29.9875, 31.14101], [29.98834, 31.14026], [29.98888, 31.13917], [29.98989, 31.13527], [29.99001, 31.13518], [29.99011, 31.13514], [29.99029, 31.13517], [29.99154, 31.13887], [29.99185, 31.14023], [29.99206, 31.14123], [29.99244, 31.14372], [29.99368, 31.14738], [29.99448, 31.14897], [29.99552, 31.15167], [29.99651, 31.15471], [29.99808, 31.15899], [29.99854, 31.16021], [29.99986, 31.16384], [30.00147, 31.16794], [30.00225, 31.17002], [30.00617, 31.18023], [30.00874, 31.18686], [30.00964, 31.18921], [30.01117, 31.19314], [30.01272, 31.19715], [30.01359, 31.19912], [30.01456, 31.20131], [30.01477, 31.20309], [30.01473, 31.20459], [30.01475, 31.20516], [30.01449, 31.20568], [30.01429, 31.20646], [30.01465, 31.20928], [30.01475, 31.20989], [30.01527, 31.21187], [30.01533, 31.21196], [30.01544, 31.21206], [30.01549, 31.21208], [30.01559, 31.21213], [30.01569, 31.21215], [30.01644, 31.21207], [30.01834, 31.21184], [30.02153, 31.2115], [30.02432, 31.2111], [30.02589, 31.21089], [30.02724, 31.21094], [30.02757, 31.21201], [30.02808, 31.2156], [30.02829, 31.21651], [30.02845, 31.21752], [30.02843, 31.22177], [30.02824, 31.22611], [30.0282, 31.22653], [30.02818, 31.22656], [30.02816, 31.22669], [30.02818, 31.22673], [30.02822, 31.22677], [30.02881, 31.22939], [30.02915, 31.2306], [30.02934, 31.23243], [30.02997, 31.23388], [30.02896, 31.23331], [30.02912, 31.23257], [30.03087, 31.23249], [30.03418, 31.23352], [30.03553, 31.23388], [30.03836, 31.23476], [30.04043, 31.23531], [30.04389, 31.23608], [30.04418, 31.23607], [30.04435, 31.23617], [30.0447, 31.23605], [30.04552, 31.23544], [30.0466, 31.23482], [30.04899, 31.23456], [30.05041, 31.23547], [30.05153, 31.23663], [30.05186, 31.23705], [30.05352, 31.2388], [30.0554, 31.24071], [30.05935, 31.24482], [30.06089, 31.24654], [30.06171, 31.2479], [30.06425, 31.25416], [30.06674, 31.2605], [30.06826, 31.26464], [30.06841, 31.26568], [30.06951, 31.26898], [30.07043, 31.27189], [30.07059, 31.27252], [30.07082, 31.27328], [30.07103, 31.27402], [30.07135, 31.27505], [30.07178, 31.27776], [30.07215, 31.27871], [30.07275, 31.27963], [30.07426, 31.28124], [30.07485, 31.28203], [30.07487, 31.28238], [30.0747, 31.28291], [30.07342, 31.28474], [30.0732, 31.28513], [30.07306, 31.28534], [30.07168, 31.28742], [30.07068, 31.28894], [30.06944, 31.29085], [30.06888, 31.29161], [30.06809, 31.29235], [30.06726, 31.29322], [30.06515, 31.29601], [30.0633, 31.29845], [30.06239, 31.29978], [30.06208, 31.30026], [30.06135, 31.30098], [30.0591, 31.30252], [30.05884, 31.3028], [30.05877, 31.30333], [30.06086, 31.30758], [30.06257, 31.31104], [30.06582, 31.3171], [30.06673, 31.32028], [30.06702, 31.32286], [30.066, 31.32497], [30.0644, 31.3253], [30.0626, 31.32554], [30.05668, 31.32643], [30.05226, 31.3271], [30.05151, 31.32726], [30.04535, 31.32868], [30.0404, 31.32974], [30.0403, 31.32974], [30.04028, 31.32977], [30.04026, 31.3298], [30.04024, 31.32988], [30.04026, 31.32994], [30.04028, 31.32995], [30.0403, 31.32998], [30.04042, 31.32997], [30.04086, 31.32985]],
@@ -471,7 +540,13 @@ function renderRoutes(type, filter = '') {
       const likeBtn = document.createElement('button');
       likeBtn.textContent = '❤️';
       likeBtn.className = 'like-btn';
-      likeBtn.onclick = () => toggleLike(route); // Optional if you're using likes
+      likeBtn.onclick = () => {
+      toggleLike(route);
+      likeBtn.classList.toggle('liked', !!likedRoutes[route.id]);
+      };
+      if (likedRoutes[route.id]) {
+      likeBtn.classList.add('liked');
+      }
 
       btnRow.appendChild(routeBtn);
       btnRow.appendChild(pinBtn);
@@ -515,6 +590,13 @@ function toggleTheme() {
   } else {
     map.removeLayer(darkLayer);
     lightLayer.addTo(map);
+  }
+}
+  function toggleLike(route) {
+  if (likedRoutes[route.id]) {
+    delete likedRoutes[route.id];
+  } else {
+    likedRoutes[route.id] = route;
   }
 }
   
