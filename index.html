@@ -234,11 +234,32 @@
   <button onclick="openMenu('bus')">
   <img src="pbus.png" alt="Bus" style="width: 30px; height: 30px;" />
   </button>
-  <button onclick="openMenu('metro')">🚇</button>
-  <button onclick="openMenu('brt')">🚍</button>
-  <button onclick="openMenu('cta')">🚆</button>
+  <button onclick="openMenu('brt')">
+  <img src="brt.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('cta')">
+  <img src="cta.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('metro')">
+  <img src="metro.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
   <button onclick="openMenu('tram')">
   <img src="tram.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('mini')">
+  <img src="mini.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('micro')">
+  <img src="micro.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('monorail')">
+  <img src="monorail.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('hst')">
+  <img src="hst.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('lrt')">
+  <img src="lrt.png" alt="Bus" style="width: 30px; height: 30px;" />
   </button>
 </div>
 
@@ -306,6 +327,31 @@
         { id: 'tram1', name: 'Tram', color: 'blue', description: 'حلوان, السيدة زينب, الشهداء, المرج' }
       ]
     },
+    mini: {
+      'Line 1': [
+        { id: 'mini1', name: 'Minibus', color: 'blue', description: 'حلوان, السيدة زينب, الشهداء, المرج' }
+      ]
+    },
+    micro: {
+      'Line 1': [
+        { id: 'micro1', name: 'Microbus', color: 'blue', description: 'حلوان, السيدة زينب, الشهداء, المرج' }
+      ]
+    },
+    monorail: {
+      'Line 1': [
+        { id: 'mono', name: 'Monorail', color: 'blue', description: 'حلوان, السيدة زينب, الشهداء, المرج' }
+      ]
+    },
+    hst: {
+      'Line 1': [
+        { id: 'hst1', name: 'HST', color: 'blue', description: 'حلوان, السيدة زينب, الشهداء, المرج' }
+      ]
+    },
+    lrt: {
+      'Line 1': [
+        { id: 'lrt1', name: 'LRT', color: 'blue', description: 'حلوان, السيدة زينب, الشهداء, المرج' }
+      ]
+    }
   };
 
   let pinnedRoutes = {};
@@ -349,7 +395,13 @@
     bus: '🚌 Bus',
     metro: '🚇 Metro',
     brt: '🚍 BRT',
-    cta: '🚆 CTA Lines'
+    cta: '🚆 CTA Lines',
+    tram: '🚋 Tram Lines',
+    mini: '🚐 Mini Bus Lines',
+    micro: '🚐 Micro Bus Lines',
+    monorail: '🚝 Monorail Lines',
+    hst: '🚅 High-Speed-Train Lines',
+    lrt: '🚈 Light-Rail-Train Lines',
   };
 
   document.getElementById('menu-title').textContent = titleMap[type];
