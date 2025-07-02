@@ -232,7 +232,10 @@
 
 <div class="icon-menu glass">
   <button onclick="openMenu('bus')">
-  <img src="buss.png" alt="Bus" style="width: 30px; height: 30px;" />
+  <img src="pbus.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('bus')">
+  <img src="pbus.png" alt="Bus" style="width: 30px; height: 30px;" />
   </button>
   <button onclick="openMenu('metro')">🚇</button>
   <button onclick="openMenu('brt')">🚍</button>
@@ -283,11 +286,6 @@
         { id: 'bus3', name: 'Y1', color: 'goldenrod', description: 'شبرا, المطرية, عزبة النخل, المرج' }
       ]
     },
-    metro: {
-      'Line 1': [
-        { id: 'metro1', name: 'Main Metro', color: 'purple', description: 'حلوان, السيدة زينب, الشهداء, المرج' }
-      ]
-    },
     brt: {
       'Express Route': [
         { id: 'brt1', name: 'Line A', color: 'orange', description: 'أكتوبر, زايد, الدقي, وسط البلد' }
@@ -297,7 +295,17 @@
       'Main Line': [
         { id: 'cta1', name: 'CTA 1', color: 'blue', description: 'رمسيس, مصر الجديدة, المطرية, العاشر' }
       ]
-    }
+    },
+    metro: {
+      'Line 1': [
+        { id: 'metro1', name: 'Main Metro', color: 'purple', description: 'حلوان, السيدة زينب, الشهداء, المرج' }
+      ]
+    },
+    tram: {
+      'Line 1': [
+        { id: 'tram1', name: 'Tram', color: 'blue', description: 'حلوان, السيدة زينب, الشهداء, المرج' }
+      ]
+    },
   };
 
   let pinnedRoutes = {};
