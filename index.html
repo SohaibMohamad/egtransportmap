@@ -261,8 +261,16 @@ function renderLikedRoutes() {
     };
 
     btnRow.appendChild(routeBtn);
-    btnRow.appendChild(pinBtn);
-    btnRow.appendChild(likeBtn);
+btnRow.appendChild(pinBtn);
+btnRow.appendChild(likeBtn);
+
+// Info Button
+const infoBtn = document.createElement('button');
+infoBtn.textContent = 'ℹ️';
+infoBtn.className = 'info-btn';
+infoBtn.onclick = () => showRouteInfo(route);
+btnRow.appendChild(infoBtn);
+
 
     const desc = document.createElement('div');
     desc.className = 'route-description';
@@ -275,6 +283,56 @@ function renderLikedRoutes() {
 
   contentPanel.appendChild(details);
 }
+    .info-btn {
+  width: 35px;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.info-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  background: white;
+  color: black;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1005;
+  padding: 16px;
+  display: none;
+  flex-direction: column;
+  font-family: 'Rubik', sans-serif;
+}
+
+.info-popup h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #333;
+}
+
+.info-popup p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.info-popup .close-info {
+  align-self: flex-end;
+  background: #e53935;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  padding: 4px 10px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
 
     @media (max-width: 768px) {
       .menu-panel {
@@ -690,6 +748,23 @@ function toggleTheme() {
     likedRoutes[route.id] = route;
   }
 }
+  function showRouteInfo(route) {
+  const popup = document.getElementById('info-popup');
+  document.getElementById('info-title').textContent = route.name;
+  document.getElementById('info-text').textContent = route.description;
+  popup.style.display = 'flex';
+}
+
+function closeRouteInfo() {
+  document.getElementById('info-popup').style.display = 'none';
+}
+
+  <div class="info-popup" id="info-popup">
+  <h3 id="info-title">Route Info</h3>
+  <p id="info-text"></p>
+  <button class="close-info" onclick="closeRouteInfo()">Close</button>
+</div>
+
   
 </script>
 </body>
