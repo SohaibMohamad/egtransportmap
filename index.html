@@ -446,7 +446,7 @@ function renderLikedRoutes() {
     bus: {
       'Green Bus': [
         { id: 'bus1', name: 'G1', color: '#006400', description: 'رمسيس, عباس العقاد, الجيزة, زويل', info:'التحرير - فيصل - الهرم - حدائق الأهرام - زويل'},
-        { id: 'bus2', name: 'G2', color: '#006400', description: 'التحرير, زمالك, أكتوبر, المعادي' }
+        { id: 'bus2', name: 'G2', color: '#006400', description: 'التحرير, زمالك, أكتوبر, المعادي', info:'التحرير - الهرم - الرماية - حدائق الأهرام - زويل' }
       ],
       'Orange Bus': [
         { id: 'bus3', name: 'O', color: 'orange', description: 'شبرا, المطرية, عزبة النخل, المرج' }
@@ -769,19 +769,17 @@ function showInfoSearchResults(routes) {
   if (!panel) {
     panel = document.createElement('div');
     panel.id = 'info-search-results';
-    panel.style.position = 'absolute';
-    panel.style.top = '120px';
-    panel.style.right = '20px';
-    panel.style.width = '250px';
-    panel.style.maxHeight = '300px';
-    panel.style.overflowY = 'auto';
-    panel.style.background = 'white';
-    panel.style.border = '1px solid #ccc';
-    panel.style.borderRadius = '10px';
-    panel.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
-    panel.style.padding = '10px';
-    panel.style.zIndex = '1005';
-    document.body.appendChild(panel);
+    panel.style.top = '160px';
+panel.style.right = '20px';
+panel.style.width = '260px';
+panel.style.maxHeight = '300px';
+panel.style.overflowY = 'auto';
+panel.style.background = 'white';
+panel.style.border = '1px solid #ccc';
+panel.style.borderRadius = '10px';
+panel.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+panel.style.padding = '10px';
+panel.style.zIndex = '1005';
   }
 
   panel.innerHTML = '';
@@ -798,8 +796,46 @@ function showInfoSearchResults(routes) {
     div.style.cursor = 'pointer';
     div.textContent = `${route.name} — ${route.info}`;
     div.onclick = () => {
-      showSingleRoute(route.id);
-    };
+  showSingleRoute(route.id);
+
+  // Step 1: Find the transport type the route belongs to
+  let foundType = null;
+  for (const type in routeData) {
+    for (const group in routeData[type]) {
+      for (const r of routeData[type][group]) {
+        if (r.id === route.id) {
+          foundType = type;
+          break;
+        }
+      }
+      if (foundType) break;
+    }
+    if (foundType) break;
+  }
+
+  if (foundType) {
+    openMenu(foundType); // Step 2: open the correct menu
+
+    // Step 3: wait for DOM to render, then scroll to the route
+    setTimeout(() => {
+      const panel = document.getElementById('menu-content-panel');
+      const card = [...panel.querySelectorAll('.route-card')].find(c =>
+        c.getAttribute('data-name') === route.name.toLowerCase()
+      );
+
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        card.style.outline = '2px solid #007bff';
+        card.style.transition = 'outline 0.5s ease';
+
+        // Remove the highlight after a second
+        setTimeout(() => {
+          card.style.outline = 'none';
+        }, 1200);
+      }
+    }, 200); // Wait for render
+  }
+};
     panel.appendChild(div);
   });
 }
