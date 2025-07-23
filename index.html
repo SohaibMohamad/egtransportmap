@@ -261,9 +261,15 @@ function renderLikedRoutes() {
       renderLikedRoutes(); // Refresh after unlike
     };
 
+    const infoBtn = document.createElement('button');
+    infoBtn.textContent = 'ℹ️';
+    infoBtn.className = 'info-btn';
+    infoBtn.onclick = () => showInfo(route);
+
     btnRow.appendChild(routeBtn);
     btnRow.appendChild(pinBtn);
     btnRow.appendChild(likeBtn);
+    btnRow.appendChild(infoBtn);
 
     const desc = document.createElement('div');
     desc.className = 'route-description';
@@ -297,6 +303,7 @@ function renderLikedRoutes() {
   <button onclick="locateMe()">📍 Locate Me</button>
   <button onclick="toggleTheme()">🌗 Theme</button>
   <button onclick="showLikedRoutes()">❤️ Liked Routes</button>
+  <input type="text" placeholder="🔍 Search Places..." id="info-search-box" oninput="searchInfo(this.value)" style="margin-top: 10px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
 </div>
 
 <div class="icon-menu glass">
@@ -438,7 +445,7 @@ function renderLikedRoutes() {
   const routeData = {
     bus: {
       'Green Bus': [
-        { id: 'bus1', name: 'G1', color: '#006400', description: 'رمسيس, عباس العقاد, الجيزة, زويل' },
+        { id: 'bus1', name: 'G1', color: '#006400', description: 'رمسيس, عباس العقاد, الجيزة, زويل', info:'التحرير - فيصل - الهرم - حدائق الأهرام - زويل'},
         { id: 'bus2', name: 'G2', color: '#006400', description: 'التحرير, زمالك, أكتوبر, المعادي' }
       ],
       'Orange Bus': [
@@ -705,6 +712,99 @@ function toggleTheme() {
     likedRoutes[route.id] = route;
   }
 }
+  function showInfo(route) {
+  alert(`📍 Places on this route:\n${route.info || 'No info available.'}`);
+}
+  function searchInfo(query) {
+  const resultRoutes = [];
+
+  if (!query.trim()) {
+    console.log("Empty search, skipping.");
+    return;
+  }
+
+  const terms = query.trim().split('-').map(t => t.trim());
+
+  for (const type in routeData) {
+    for (const group in routeData[type]) {
+      for (const route of routeData[type][group]) {
+        if (!route.info) continue;
+
+        const infoStops = route.info.split('-').map(s => s.trim());
+
+        let i = 0; // index in infoStops
+        let matched = true;
+
+        for (let j = 0; j < terms.length; j++) {
+          const term = terms[j];
+          let found = false;
+
+          while (i < infoStops.length) {
+            if (infoStops[i].includes(term)) {
+              found = true;
+              i++;
+              break;
+            }
+            i++;
+          }
+
+          if (!found) {
+            matched = false;
+            break;
+          }
+        }
+
+        if (matched) {
+          resultRoutes.push(route);
+        }
+      }
+    }
+  }
+
+  showInfoSearchResults(resultRoutes);
+}
+function showInfoSearchResults(routes) {
+  let panel = document.getElementById('info-search-results');
+
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'info-search-results';
+    panel.style.position = 'absolute';
+    panel.style.top = '120px';
+    panel.style.right = '20px';
+    panel.style.width = '250px';
+    panel.style.maxHeight = '300px';
+    panel.style.overflowY = 'auto';
+    panel.style.background = 'white';
+    panel.style.border = '1px solid #ccc';
+    panel.style.borderRadius = '10px';
+    panel.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+    panel.style.padding = '10px';
+    panel.style.zIndex = '1005';
+    document.body.appendChild(panel);
+  }
+
+  panel.innerHTML = '';
+
+  if (routes.length === 0) {
+    panel.innerHTML = '<div>No matching routes found.</div>';
+    return;
+  }
+
+  routes.forEach(route => {
+    const div = document.createElement('div');
+    div.style.padding = '6px 0';
+    div.style.borderBottom = '1px solid #eee';
+    div.style.cursor = 'pointer';
+    div.textContent = `${route.name} — ${route.info}`;
+    div.onclick = () => {
+      showSingleRoute(route.id);
+    };
+    panel.appendChild(div);
+  });
+}
+
+
   
 </script>
 </body>
