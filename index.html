@@ -319,20 +319,21 @@ function renderLikedRoutes() {
          style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
   <input type="text" id="to-input" placeholder="To..." 
          style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
-  <button onclick="searchFromTo()" 
-          style="margin-top: 8px; padding: 6px 12px; font-size: 14px; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer;">
-    🚏 From-To Route
-  </button>
+  <div style="position: relative;">
+  <input type="text" placeholder="🔍 Search Places..." id="info-search-box" oninput="searchInfo(this.value)" 
+         style="width: 180px; padding-right: 24px;" />
+  <button onclick="document.getElementById('info-search-box').value=''; searchInfo('');"
+          style="position: absolute; right: 4px; top: 3px; border: none; background: none; font-size: 16px; cursor: pointer;">✖</button>
+  </div>
 
   <!-- ✅ Result Panel Placeholder -->
-  <div id="from-to-result-panel" style="display: none; position: absolute; top: 100%; right: 0; width: 300px; background: white; border: 1px solid #ccc; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); padding: 10px; z-index: 1005;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-      <strong>Matching Routes</strong>
-      <button onclick="document.getElementById('from-to-result-panel').style.display='none';" style="background: #e53935; color: white; border: none; border-radius: 4px; padding: 2px 6px; cursor: pointer;">×</button>
-    </div>
-    <div id="from-to-result-content"></div>
+  <div style="position: relative;">
+  <input type="text" id="from-input" placeholder="From..." style="width: 180px; padding-right: 24px;" />
+  <input type="text" id="to-input" placeholder="To..." style="width: 180px; padding-right: 24px;" />
+  <button onclick="searchFromTo()">🚏 From-To Route</button>
+  <button onclick="clearFromTo()" style="position: absolute; right: 0; top: 3px; border: none; background: none; font-size: 16px; cursor: pointer;">✖</button>
   </div>
-</div>
+
 </div>
 
 
@@ -895,63 +896,83 @@ function searchFromTo() {
   content.innerHTML = '';
 
   if (!from || !to) {
-    content.innerHTML = '<div>Please enter both "From" and "To" locations.</div>';
+    content.innerHTML = '<div>Please enter both "From" and "To" values.</div>';
     return;
   }
 
-  const matches = [];
+  const allRoutes = [];
 
+  // Flatten routeData into array
   for (const type in routeData) {
     for (const group in routeData[type]) {
       for (const route of routeData[type][group]) {
         if (!route.info) continue;
-
         const stops = route.info.split('-').map(s => s.trim());
-        let fromIndex = -1;
-        let toIndex = -1;
+        allRoutes.push({ ...route, stops });
+      }
+    }
+  }
 
-        // Match multiple instances in same route if needed
-        for (let i = 0; i < stops.length; i++) {
-          if (stops[i].includes(from)) fromIndex = i;
-          if (stops[i].includes(to) && fromIndex !== -1 && i > fromIndex) {
-            toIndex = i;
-            break;
-          }
-        }
+  const matches = [];
 
-        if (fromIndex !== -1 && toIndex !== -1 && fromIndex < toIndex) {
-          matches.push(route);
+  for (const route1 of allRoutes) {
+    const fromIndex = route1.stops.findIndex(s => s.includes(from));
+    if (fromIndex === -1) continue;
+
+    // Start looking for possible transfer points
+    for (let i = fromIndex + 1; i < route1.stops.length; i++) {
+      const junction = route1.stops[i];
+
+      for (const route2 of allRoutes) {
+        const junctionIndex = route2.stops.findIndex(s => s.includes(junction));
+        const toIndex = route2.stops.findIndex(s => s.includes(to));
+
+        if (junctionIndex !== -1 && toIndex !== -1 && junctionIndex < toIndex) {
+          matches.push([route1, route2]);
         }
       }
     }
   }
 
   if (matches.length === 0) {
-    content.innerHTML = '<div>No matching route found.</div>';
+    content.innerHTML = '<div>No connected route found.</div>';
     return;
   }
 
-  matches.forEach(route => {
-    const card = document.createElement('div');
-    card.style.padding = '10px';
-    card.style.marginBottom = '10px';
-    card.style.border = `2px solid ${route.color}`;
-    card.style.borderRadius = '8px';
-    card.style.background = '#f9f9f9';
-    card.style.cursor = 'pointer';
+  // Show all route pairs
+  matches.forEach(([r1, r2]) => {
+    const wrapper = document.createElement('div');
+    wrapper.style.border = '1px solid #ccc';
+    wrapper.style.borderRadius = '8px';
+    wrapper.style.padding = '10px';
+    wrapper.style.marginBottom = '10px';
+    wrapper.style.background = '#f9f9f9';
 
-    card.innerHTML = `
-      <div style="font-weight: bold; color: ${route.color}; font-size: 15px;">${route.name}</div>
-      <div style="font-size: 13px; margin-top: 4px;">${route.info}</div>
-    `;
+    [r1, r2].forEach(route => {
+      const card = document.createElement('div');
+      card.style.marginBottom = '6px';
+      card.style.borderLeft = `4px solid ${route.color}`;
+      card.style.paddingLeft = '8px';
+      card.style.cursor = 'pointer';
+      card.innerHTML = `
+        <div style="font-weight: bold; color: ${route.color}; font-size: 15px;">${route.name}</div>
+        <div style="font-size: 13px;">${route.info}</div>
+      `;
+      card.onclick = () => {
+        showSingleRoute(route.id);
+        panel.style.display = 'none';
+      };
+      wrapper.appendChild(card);
+    });
 
-    card.onclick = () => {
-      showSingleRoute(route.id);
-      panel.style.display = 'none';
-    };
-
-    content.appendChild(card);
+    content.appendChild(wrapper);
   });
+}
+
+function clearFromTo() {
+  document.getElementById('from-input').value = '';
+  document.getElementById('to-input').value = '';
+  document.getElementById('from-to-result-panel').style.display = 'none';
 }
 
 
