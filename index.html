@@ -340,6 +340,44 @@ function renderLikedRoutes() {
         left: 5%;
       }
     }
+
+    .suggestion-box {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 1005;
+  width: 240px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+}
+
+.suggestion-box div {
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.suggestion-box div:hover {
+  background: #f0f0f0;
+}
+
+/* Enhance From-To result panel */
+#from-to-result-panel {
+  max-height: 300px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 1001;
+  position: absolute;
+  right: 20px;
+  top: 280px;
+  width: 280px;
+}
+
   </style>
 </head>
 <body>
@@ -362,11 +400,17 @@ function renderLikedRoutes() {
   </div>
 
   <!-- 🛣️ From-To Inputs -->
-  <div class="input-wrapper" id="fromto-wrapper">
-    <input type="text" id="from-input" placeholder="From...">
-    <input type="text" id="to-input" placeholder="To...">
-    <button class="clear-btn" onclick="clearFromTo()" style="top: 34px;">✖</button>
-  </div>
+  <!-- 🛣️ From-To Inputs -->
+<div class="input-wrapper" id="fromto-wrapper">
+  <input type="text" id="from-input" placeholder="From...">
+  <input type="text" id="to-input" placeholder="To...">
+  <button class="clear-btn" onclick="clearFromTo()" style="top: 34px;">✖</button>
+</div>
+
+<!-- 🔁 Suggestions -->
+<div id="from-suggestions" class="suggestion-box" style="display: none;"></div>
+<div id="to-suggestions" class="suggestion-box" style="display: none;"></div>
+
   <button class="action-button" onclick="searchFromTo()">🚏 From-To Route</button>
 </div>
 
@@ -1038,6 +1082,67 @@ function searchFromTo() {
   });
 }
 
+// Collect all stops from routeData
+let allStops = new Set();
+
+for (const type in routeData) {
+  for (const group in routeData[type]) {
+    for (const route of routeData[type][group]) {
+      if (!route.info) continue;
+      const stops = route.info.split('-').map(s => s.trim());
+      stops.forEach(stop => allStops.add(stop));
+    }
+  }
+}
+const stopList = [...allStops];
+
+// Suggestion setup
+function setupSuggestions(inputId, suggestionId) {
+  const input = document.getElementById(inputId);
+  const box = document.getElementById(suggestionId);
+
+  input.addEventListener('input', () => {
+    const query = input.value.trim().toLowerCase();
+    box.innerHTML = '';
+
+    if (!query) {
+      box.style.display = 'none';
+      return;
+    }
+
+    const matches = stopList.filter(stop => stop.toLowerCase().includes(query)).slice(0, 10);
+
+    if (matches.length === 0) {
+      box.style.display = 'none';
+      return;
+    }
+
+    matches.forEach(stop => {
+      const div = document.createElement('div');
+      div.textContent = stop;
+      div.onclick = () => {
+        input.value = stop;
+        box.style.display = 'none';
+      };
+      box.appendChild(div);
+    });
+
+    const rect = input.getBoundingClientRect();
+    box.style.top = `${rect.bottom + window.scrollY}px`;
+    box.style.left = `${rect.left + window.scrollX}px`;
+    box.style.display = 'block';
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!box.contains(e.target) && e.target !== input) {
+      box.style.display = 'none';
+    }
+  });
+}
+
+// Activate for both inputs
+setupSuggestions('from-input', 'from-suggestions');
+setupSuggestions('to-input', 'to-suggestions');
 
   
 </script>
