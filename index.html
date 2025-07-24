@@ -299,18 +299,27 @@ function renderLikedRoutes() {
 
 <div id="map"></div>
 
-<div class="top-right-buttons glass">
+<div class="top-right-buttons glass" id="top-controls">
   <button onclick="locateMe()">📍 Locate Me</button>
   <button onclick="toggleTheme()">🌗 Theme</button>
   <button onclick="showLikedRoutes()">❤️ Liked Routes</button>
-  <input type="text" placeholder="🔍 Search Places..." id="info-search-box" oninput="searchInfo(this.value)" style="margin-top: 10px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
-</div>
-  <!-- Under the #info-search-box input -->
-<input type="text" id="from-input" placeholder="From..." style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
-  <input type="text" id="to-input" placeholder="To..." style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
-  <button onclick="searchFromTo()" style="margin-top: 8px; padding: 6px 12px; font-size: 14px; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer;">
+
+  <!-- 🔍 Info search -->
+  <input type="text" placeholder="🔍 Search Places..." id="info-search-box"
+    oninput="searchInfo(this.value)"
+    style="margin-top: 10px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
+
+  <!-- ✅ From-To UI -->
+  <input type="text" id="from-input" placeholder="From..."
+    style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
+  <input type="text" id="to-input" placeholder="To..."
+    style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
+  <button onclick="searchFromTo()"
+    style="margin-top: 8px; padding: 6px 12px; font-size: 14px; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer;">
     🚏 From-To Route
   </button>
+</div>
+
 
 <div class="icon-menu glass">
   <button onclick="openMenu('bus')">
@@ -898,7 +907,9 @@ function searchFromTo() {
     panel.id = panelId;
     panel.style.position = 'absolute';
     panel.style.right = '20px';
-    panel.style.top = '400px';
+    const ref = document.getElementById('to-input');
+const refRect = ref.getBoundingClientRect();
+panel.style.top = `${refRect.bottom + window.scrollY + 10}px`;
     panel.style.width = '300px';
     panel.style.maxHeight = '400px';
     panel.style.overflowY = 'auto';
