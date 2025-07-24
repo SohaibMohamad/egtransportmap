@@ -340,6 +340,43 @@ function renderLikedRoutes() {
         left: 5%;
       }
     }
+
+    .autocomplete-box {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1001;
+  width: 100%;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.autocomplete-box div {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.autocomplete-box div:hover {
+  background-color: #f0f0f0;
+}
+
+#from-to-result-panel {
+  position: absolute;
+  top: calc(100% + 10px); /* below the from-to button */
+  right: 20px;
+  width: 280px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 999;
+  display: none;
+  max-height: 220px;
+  overflow-y: auto;
+}
   </style>
 </head>
 <body>
@@ -374,7 +411,7 @@ function renderLikedRoutes() {
 <div class="result-panel" id="info-results" style="top: 190px;"></div>
 
 <!-- 🛣️ From-To Results -->
-<div class="result-panel" id="from-to-result-panel" style="top: 280px;">
+<div class="result-panel" id="from-to-result-panel">
   <div style="display: flex; justify-content: space-between; align-items: center;">
     <strong>Matching Routes</strong>
     <button onclick="document.getElementById('from-to-result-panel').style.display='none'" 
@@ -945,6 +982,67 @@ function clearFromTo() {
   document.getElementById('to-input').value = '';
   document.getElementById('from-to-result-panel').style.display = 'none';
 }
+let allStopsSet = new Set();
+
+function collectAllStops() {
+  allStopsSet.clear();
+  for (const type in routeData) {
+    for (const group in routeData[type]) {
+      for (const route of routeData[type][group]) {
+        if (!route.info) continue;
+        const stops = route.info.split('-').map(s => s.trim());
+        stops.forEach(stop => allStopsSet.add(stop));
+      }
+    }
+  }
+}
+
+collectAllStops(); // Run once on page load
+
+  function setupAutocomplete(inputId) {
+  const input = document.getElementById(inputId);
+  let box = null;
+
+  input.addEventListener('input', () => {
+    const value = input.value.trim().toLowerCase();
+    if (box) box.remove();
+
+    if (!value) return;
+
+    box = document.createElement('div');
+    box.className = 'autocomplete-box';
+    box.style.top = `${input.offsetTop + input.offsetHeight}px`;
+    box.style.left = `${input.offsetLeft}px`;
+
+    const parentRect = input.getBoundingClientRect();
+    box.style.position = 'absolute';
+    box.style.left = `${parentRect.left}px`;
+    box.style.top = `${parentRect.bottom + window.scrollY}px`;
+    box.style.width = `${input.offsetWidth}px`;
+
+    let matches = Array.from(allStopsSet).filter(stop => stop.toLowerCase().includes(value)).slice(0, 10);
+    matches.forEach(stop => {
+      const option = document.createElement('div');
+      option.textContent = stop;
+      option.onclick = () => {
+        input.value = stop;
+        box.remove();
+      };
+      box.appendChild(option);
+    });
+
+    document.body.appendChild(box);
+  });
+
+  input.addEventListener('blur', () => {
+    setTimeout(() => {
+      if (box) box.remove();
+    }, 200); // Give time to click option
+  });
+}
+
+setupAutocomplete('from-input');
+setupAutocomplete('to-input');
 
 function searchFromTo() {
   const from = document.getElementById('from-input').value.trim();
