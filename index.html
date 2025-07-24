@@ -770,17 +770,11 @@ function showInfoSearchResults(routes) {
     panel = document.createElement('div');
     panel.id = 'info-search-results';
     panel.style.position = 'absolute';
-    panel.style.top = '160px';
-    panel.style.right = '20px';
-    panel.style.width = '260px';
-    panel.style.maxHeight = '300px';
-    panel.style.overflowY = 'auto';
-    panel.style.background = 'white';
-    panel.style.border = '1px solid #ccc';
-    panel.style.borderRadius = '10px';
-    panel.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
-    panel.style.padding = '10px';
-    panel.style.zIndex = '1005';
+   const inputBox = document.getElementById('info-search-box');
+const inputRect = inputBox.getBoundingClientRect();
+
+panel.style.top = `${inputRect.bottom + window.scrollY + 8}px`;
+panel.style.right = '20px';
 
     document.body.appendChild(panel); // 👈 MISSING LINE
   }
@@ -793,54 +787,63 @@ function showInfoSearchResults(routes) {
   }
 
   routes.forEach(route => {
-    const div = document.createElement('div');
-    div.style.padding = '6px 0';
-    div.style.borderBottom = '1px solid #eee';
-    div.style.cursor = 'pointer';
-    div.textContent = `${route.name} — ${route.info}`;
-    div.onclick = () => {
-      showSingleRoute(route.id);
+  const card = document.createElement('div');
+  card.style.padding = '10px';
+  card.style.marginBottom = '10px';
+  card.style.border = `2px solid ${route.color}`;
+  card.style.borderRadius = '8px';
+  card.style.background = '#f9f9f9';
+  card.style.cursor = 'pointer';
+  card.style.transition = 'background 0.2s ease';
 
-      // Step 1: Find the transport type the route belongs to
-      let foundType = null;
-      for (const type in routeData) {
-        for (const group in routeData[type]) {
-          for (const r of routeData[type][group]) {
-            if (r.id === route.id) {
-              foundType = type;
-              break;
-            }
+  card.onmouseover = () => card.style.background = '#eef6ff';
+  card.onmouseout = () => card.style.background = '#f9f9f9';
+
+  card.innerHTML = `
+    <div style="font-weight: bold; color: ${route.color}; font-size: 15px;">${route.name}</div>
+    <div style="font-size: 13px; margin-top: 4px;">${route.info}</div>
+  `;
+
+  card.onclick = () => {
+    showSingleRoute(route.id);
+
+    // Same logic for opening and scrolling to the menu
+    let foundType = null;
+    for (const type in routeData) {
+      for (const group in routeData[type]) {
+        for (const r of routeData[type][group]) {
+          if (r.id === route.id) {
+            foundType = type;
+            break;
           }
-          if (foundType) break;
         }
         if (foundType) break;
       }
+      if (foundType) break;
+    }
 
-      if (foundType) {
-        openMenu(foundType); // Step 2: open the correct menu
+    if (foundType) {
+      openMenu(foundType);
+      setTimeout(() => {
+        const panel = document.getElementById('menu-content-panel');
+        const routeCard = [...panel.querySelectorAll('.route-card')].find(c =>
+          c.getAttribute('data-name') === route.name.toLowerCase()
+        );
 
-        // Step 3: wait for DOM to render, then scroll to the route
-        setTimeout(() => {
-          const panel = document.getElementById('menu-content-panel');
-          const card = [...panel.querySelectorAll('.route-card')].find(c =>
-            c.getAttribute('data-name') === route.name.toLowerCase()
-          );
+        if (routeCard) {
+          routeCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          routeCard.style.outline = '2px solid #007bff';
+          setTimeout(() => {
+            routeCard.style.outline = 'none';
+          }, 1200);
+        }
+      }, 200);
+    }
+  };
 
-          if (card) {
-            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            card.style.outline = '2px solid #007bff';
-            card.style.transition = 'outline 0.5s ease';
+  panel.appendChild(card);
+});
 
-            setTimeout(() => {
-              card.style.outline = 'none';
-            }, 1200);
-          }
-        }, 200);
-      }
-    };
-    panel.appendChild(div);
-  });
-}
 
 
   
