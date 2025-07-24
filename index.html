@@ -306,11 +306,11 @@ function renderLikedRoutes() {
   <input type="text" placeholder="🔍 Search Places..." id="info-search-box" oninput="searchInfo(this.value)" style="margin-top: 10px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
 </div>
   <!-- Under the #info-search-box input -->
-<input type="text" placeholder="From..." id="from-input" style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
-<input type="text" placeholder="To..." id="to-input" style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
-<button onclick="searchFromTo()" style="margin-top: 8px; padding: 6px 12px; font-size: 14px; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer;">
-  🚏 From-To Route
-</button>
+<input type="text" id="from-input" placeholder="From..." style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
+  <input type="text" id="to-input" placeholder="To..." style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
+  <button onclick="searchFromTo()" style="margin-top: 8px; padding: 6px 12px; font-size: 14px; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer;">
+    🚏 From-To Route
+  </button>
 
 <div class="icon-menu glass">
   <button onclick="openMenu('bus')">
@@ -866,7 +866,7 @@ function searchFromTo() {
   const to = document.getElementById('to-input').value.trim();
 
   if (!from || !to) {
-    alert("Please enter both 'From' and 'To' locations.");
+    alert("Please enter both 'From' and 'To' values.");
     return;
   }
 
@@ -879,8 +879,8 @@ function searchFromTo() {
         if (!route.info) continue;
 
         const stops = route.info.split('-').map(s => s.trim());
-        const fromIndex = stops.findIndex(stop => stop.includes(from));
-        const toIndex = stops.findIndex(stop => stop.includes(to));
+        const fromIndex = stops.findIndex(s => s.includes(from));
+        const toIndex = stops.findIndex(s => s.includes(to));
 
         if (fromIndex !== -1 && toIndex !== -1 && fromIndex < toIndex) {
           matchedRoute = route;
@@ -898,7 +898,7 @@ function searchFromTo() {
     panel.id = panelId;
     panel.style.position = 'absolute';
     panel.style.right = '20px';
-    panel.style.top = '250px';
+    panel.style.top = '400px';
     panel.style.width = '300px';
     panel.style.maxHeight = '400px';
     panel.style.overflowY = 'auto';
@@ -914,7 +914,7 @@ function searchFromTo() {
   panel.innerHTML = '';
 
   if (!matchedRoute) {
-    panel.innerHTML = '<div>No route found between these points.</div>';
+    panel.innerHTML = '<div>No matching route found.</div>';
     return;
   }
 
@@ -937,7 +937,6 @@ function searchFromTo() {
 
   panel.appendChild(card);
 
-  // Show it on the map
   showSingleRoute(matchedRoute.id);
 }
 
