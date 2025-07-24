@@ -48,14 +48,65 @@
     }
 
     .top-right-buttons {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 1002;
-    }
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+    width: 240px;
+  }
+
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .input-wrapper input {
+    padding: 6px 28px 6px 8px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 4px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .input-wrapper button.clear-btn {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .action-button {
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 8px;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .result-panel {
+    position: absolute;
+    right: 20px;
+    width: 280px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 999;
+    display: none;
+  }
 
     .top-right-buttons button {
       padding: 8px 14px;
@@ -299,25 +350,37 @@ function renderLikedRoutes() {
 
 <div id="map"></div>
 
-<div class="top-right-buttons glass" id="top-controls">
+<div class="top-right-buttons glass">
   <button onclick="locateMe()">📍 Locate Me</button>
   <button onclick="toggleTheme()">🌗 Theme</button>
   <button onclick="showLikedRoutes()">❤️ Liked Routes</button>
 
-  <!-- 🔍 Info search -->
-  <input type="text" placeholder="🔍 Search Places..." id="info-search-box"
-    oninput="searchInfo(this.value)"
-    style="margin-top: 10px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
+  <!-- 🔍 Search Input -->
+  <div class="input-wrapper" id="search-wrapper">
+    <input type="text" id="info-search-box" placeholder="🔍 Search Places..." oninput="searchInfo(this.value)">
+    <button class="clear-btn" onclick="clearSearch()">✖</button>
+  </div>
 
-  <!-- ✅ From-To UI -->
-  <input type="text" id="from-input" placeholder="From..."
-    style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
-  <input type="text" id="to-input" placeholder="To..."
-    style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
-  <button onclick="searchFromTo()"
-    style="margin-top: 8px; padding: 6px 12px; font-size: 14px; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer;">
-    🚏 From-To Route
-  </button>
+  <!-- 🛣️ From-To Inputs -->
+  <div class="input-wrapper" id="fromto-wrapper">
+    <input type="text" id="from-input" placeholder="From...">
+    <input type="text" id="to-input" placeholder="To...">
+    <button class="clear-btn" onclick="clearFromTo()" style="top: 34px;">✖</button>
+  </div>
+  <button class="action-button" onclick="searchFromTo()">🚏 From-To Route</button>
+</div>
+
+<!-- 🔍 Search Results -->
+<div class="result-panel" id="info-results" style="top: 190px;"></div>
+
+<!-- 🛣️ From-To Results -->
+<div class="result-panel" id="from-to-result-panel" style="top: 280px;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <strong>Matching Routes</strong>
+    <button onclick="document.getElementById('from-to-result-panel').style.display='none'" 
+            style="background: none; border: none; font-size: 16px; cursor: pointer;">✖</button>
+  </div>
+  <div id="from-to-result-content" style="margin-top: 8px;"></div>
 </div>
 
 
@@ -870,85 +933,109 @@ function showInfoSearchResults(routes) {
   });
 }
 
+function clearSearch() {
+  const input = document.getElementById('info-search-box');
+  input.value = '';
+  searchInfo('');
+  document.getElementById('info-results').style.display = 'none';
+}
+
+function clearFromTo() {
+  document.getElementById('from-input').value = '';
+  document.getElementById('to-input').value = '';
+  document.getElementById('from-to-result-panel').style.display = 'none';
+}
+
 function searchFromTo() {
   const from = document.getElementById('from-input').value.trim();
   const to = document.getElementById('to-input').value.trim();
+  const panel = document.getElementById('from-to-result-panel');
+  const content = document.getElementById('from-to-result-content');
+
+  panel.style.display = 'block';
+  content.innerHTML = '';
 
   if (!from || !to) {
-    alert("Please enter both 'From' and 'To' values.");
+    content.innerHTML = '<div>Please enter both "From" and "To".</div>';
     return;
   }
 
-  let matchedRoute = null;
+  const allRoutes = [];
 
-  outerLoop:
   for (const type in routeData) {
     for (const group in routeData[type]) {
       for (const route of routeData[type][group]) {
         if (!route.info) continue;
-
         const stops = route.info.split('-').map(s => s.trim());
-        const fromIndex = stops.findIndex(s => s.includes(from));
-        const toIndex = stops.findIndex(s => s.includes(to));
+        allRoutes.push({ ...route, stops });
+      }
+    }
+  }
 
-        if (fromIndex !== -1 && toIndex !== -1 && fromIndex < toIndex) {
-          matchedRoute = route;
-          break outerLoop;
+  const results = [];
+
+  // Match same route
+  for (const route of allRoutes) {
+    const fromIndex = route.stops.findIndex(s => s.includes(from));
+    const toIndex = route.stops.findIndex(s => s.includes(to));
+    if (fromIndex !== -1 && toIndex !== -1 && fromIndex < toIndex) {
+      results.push([route]);
+    }
+  }
+
+  // Match across two routes
+  for (const route1 of allRoutes) {
+    const fromIndex = route1.stops.findIndex(s => s.includes(from));
+    if (fromIndex === -1) continue;
+
+    for (let i = fromIndex + 1; i < route1.stops.length; i++) {
+      const junction = route1.stops[i];
+
+      for (const route2 of allRoutes) {
+        if (route2.id === route1.id) continue;
+        const junctionIndex = route2.stops.findIndex(s => s.includes(junction));
+        const toIndex = route2.stops.findIndex(s => s.includes(to));
+
+        if (junctionIndex !== -1 && toIndex !== -1 && junctionIndex < toIndex) {
+          results.push([route1, route2]);
         }
       }
     }
   }
 
-  const panelId = 'from-to-result-panel';
-  let panel = document.getElementById(panelId);
-
-  if (!panel) {
-    panel = document.createElement('div');
-    panel.id = panelId;
-    panel.style.position = 'absolute';
-    panel.style.right = '20px';
-    const ref = document.getElementById('to-input');
-const refRect = ref.getBoundingClientRect();
-panel.style.top = `${refRect.bottom + window.scrollY + 10}px`;
-    panel.style.width = '300px';
-    panel.style.maxHeight = '400px';
-    panel.style.overflowY = 'auto';
-    panel.style.background = 'white';
-    panel.style.border = '1px solid #ccc';
-    panel.style.borderRadius = '10px';
-    panel.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
-    panel.style.padding = '10px';
-    panel.style.zIndex = '1005';
-    document.body.appendChild(panel);
-  }
-
-  panel.innerHTML = '';
-
-  if (!matchedRoute) {
-    panel.innerHTML = '<div>No matching route found.</div>';
+  if (results.length === 0) {
+    content.innerHTML = '<div>No connected route found.</div>';
     return;
   }
 
-  const card = document.createElement('div');
-  card.style.padding = '10px';
-  card.style.marginBottom = '10px';
-  card.style.border = `2px solid ${matchedRoute.color}`;
-  card.style.borderRadius = '8px';
-  card.style.background = '#f9f9f9';
-  card.style.cursor = 'pointer';
+  // Show all matches
+  results.forEach(routeChain => {
+    const wrapper = document.createElement('div');
+    wrapper.style.marginBottom = '10px';
+    wrapper.style.padding = '8px';
+    wrapper.style.border = '1px solid #ccc';
+    wrapper.style.borderRadius = '6px';
+    wrapper.style.background = '#f9f9f9';
 
-  card.innerHTML = `
-    <div style="font-weight: bold; color: ${matchedRoute.color}; font-size: 15px;">${matchedRoute.name}</div>
-    <div style="font-size: 13px; margin-top: 4px;">${matchedRoute.info}</div>
-  `;
+    routeChain.forEach(route => {
+      const card = document.createElement('div');
+      card.style.marginBottom = '6px';
+      card.style.borderLeft = `4px solid ${route.color}`;
+      card.style.paddingLeft = '8px';
+      card.style.cursor = 'pointer';
+      card.innerHTML = `
+        <div style="font-weight: bold; color: ${route.color}; font-size: 15px;">${route.name}</div>
+        <div style="font-size: 13px;">${route.info}</div>
+      `;
+      card.onclick = () => {
+        showSingleRoute(route.id);
+        panel.style.display = 'none';
+      };
+      wrapper.appendChild(card);
+    });
 
-  card.onclick = () => {
-    showSingleRoute(matchedRoute.id);
-  };
-
-  panel.appendChild(card);
-
-  showSingleRoute(matchedRoute.id);
+    content.appendChild(wrapper);
+  });
 }
 
 
