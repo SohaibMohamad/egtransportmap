@@ -97,16 +97,20 @@
   }
 
   .result-panel {
-    position: absolute;
-    right: 20px;
-    width: 280px;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    z-index: 999;
-    display: none;
-  }
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 240px;
+  max-height: 260px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  overflow-y: auto;
+  padding: 10px;
+  z-index: 1005;
+  display: none;
+}
 
     .top-right-buttons button {
       padding: 8px 14px;
@@ -416,19 +420,15 @@ function renderLikedRoutes() {
 
   <!-- 🛣️ From-To Inputs -->
   <!-- 🛣️ From-To Inputs -->
-<div class="fromto-section" style="position: relative; display: inline-block;">
-
-  <!-- From-To Inputs -->
+<div id="fromto-container" style="position: relative; display: inline-block;">
   <div class="input-wrapper" id="fromto-wrapper">
     <input type="text" id="from-input" placeholder="From...">
     <input type="text" id="to-input" placeholder="To...">
     <button class="clear-btn" onclick="clearFromTo()" style="top: 34px;">✖</button>
   </div>
 
-  <!-- From-To Button -->
   <button class="action-button" onclick="searchFromTo()">From-To Route</button>
 
-  <!-- From-To Result Panel -->
   <div class="result-panel" id="from-to-result-panel">
     <div style="display: flex; justify-content: space-between; align-items: center;">
       <strong>Matching Routes</strong>
@@ -437,7 +437,6 @@ function renderLikedRoutes() {
     </div>
     <div id="from-to-result-content" style="margin-top: 8px;"></div>
   </div>
-
 </div>
 
 <!-- 🔁 Suggestions -->
@@ -1115,7 +1114,7 @@ function searchFromTo() {
     content.appendChild(wrapper);
   });
 
-panel.style.display = 'block';
+document.getElementById('from-to-result-panel').style.display = 'block';
 
 }
 
