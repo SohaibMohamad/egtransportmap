@@ -96,22 +96,17 @@
     width: 100%;
   }
 
- .result-panel {
-  position: absolute;
-  top: calc(100% + 8px); /* below button */
-  left: 0;
-  width: 260px;
-  max-height: 260px;
-  overflow-y: auto;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  z-index: 1005;
-  display: none;
-}
-
+  .result-panel {
+    position: absolute;
+    right: 20px;
+    width: 280px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 999;
+    display: none;
+  }
 
     .top-right-buttons button {
       padding: 8px 14px;
@@ -345,59 +340,6 @@ function renderLikedRoutes() {
         left: 5%;
       }
     }
-
-    .suggestion-box {
-  position: absolute;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  max-height: 150px;
-  overflow-y: auto;
-  z-index: 1005;
-  width: 240px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  font-size: 14px;
-}
-
-.suggestion-box div {
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.suggestion-box div:hover {
-  background: #f0f0f0;
-}
-
-/* Enhance From-To result panel */
-#from-to-result-panel {
-  position: absolute;
-  width: 240px;
-  max-height: 260px;
-  overflow-y: auto;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  padding: 10px;
-  z-index: 1005;
-  display: none;
-}
-.result-panel {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  max-height: 260px;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  overflow-y: auto;
-  padding: 10px;
-  z-index: 1005;
-  display: none;
-}
-
   </style>
 </head>
 <body>
@@ -420,35 +362,11 @@ function renderLikedRoutes() {
   </div>
 
   <!-- 🛣️ From-To Inputs -->
-  <!-- 🛣️ From-To Inputs -->
-<!-- Wrap From-To section -->
-<div id="fromto-container" style="position: relative; display: inline-block;">
-
   <div class="input-wrapper" id="fromto-wrapper">
     <input type="text" id="from-input" placeholder="From...">
     <input type="text" id="to-input" placeholder="To...">
     <button class="clear-btn" onclick="clearFromTo()" style="top: 34px;">✖</button>
   </div>
-
-  <button class="action-button" onclick="searchFromTo()">From-To Route</button>
-
-  <!-- From-To Result Panel (moved inside this wrapper!) -->
-  <div class="result-panel" id="from-to-result-panel">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <strong>Matching Routes</strong>
-      <button onclick="document.getElementById('from-to-result-panel').style.display='none'" 
-              style="background: none; border: none; font-size: 16px; cursor: pointer;">✖</button>
-    </div>
-    <div id="from-to-result-content" style="margin-top: 8px;"></div>
-  </div>
-
-</div>
-
-
-<!-- 🔁 Suggestions -->
-<div id="from-suggestions" class="suggestion-box" style="display: none;"></div>
-<div id="to-suggestions" class="suggestion-box" style="display: none;"></div>
-
   <button class="action-button" onclick="searchFromTo()">🚏 From-To Route</button>
 </div>
 
@@ -456,15 +374,14 @@ function renderLikedRoutes() {
 <div class="result-panel" id="info-results" style="top: 190px;"></div>
 
 <!-- 🛣️ From-To Results -->
-<div class="result-panel" id="from-to-result-panel">
-  <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+<div class="result-panel" id="from-to-result-panel" style="top: 280px;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
     <strong>Matching Routes</strong>
     <button onclick="document.getElementById('from-to-result-panel').style.display='none'" 
             style="background: none; border: none; font-size: 16px; cursor: pointer;">✖</button>
   </div>
   <div id="from-to-result-content" style="margin-top: 8px;"></div>
 </div>
-
 
 
 <div class="icon-menu glass">
@@ -1119,72 +1036,8 @@ function searchFromTo() {
 
     content.appendChild(wrapper);
   });
-
-document.getElementById('from-to-result-panel').style.display = 'block';
-
 }
 
-// Collect all stops from routeData
-let allStops = new Set();
-
-for (const type in routeData) {
-  for (const group in routeData[type]) {
-    for (const route of routeData[type][group]) {
-      if (!route.info) continue;
-      const stops = route.info.split('-').map(s => s.trim());
-      stops.forEach(stop => allStops.add(stop));
-    }
-  }
-}
-const stopList = [...allStops];
-
-// Suggestion setup
-function setupSuggestions(inputId, suggestionId) {
-  const input = document.getElementById(inputId);
-  const box = document.getElementById(suggestionId);
-
-  input.addEventListener('input', () => {
-    const query = input.value.trim().toLowerCase();
-    box.innerHTML = '';
-
-    if (!query) {
-      box.style.display = 'none';
-      return;
-    }
-
-    const matches = stopList.filter(stop => stop.toLowerCase().includes(query)).slice(0, 10);
-
-    if (matches.length === 0) {
-      box.style.display = 'none';
-      return;
-    }
-
-    matches.forEach(stop => {
-      const div = document.createElement('div');
-      div.textContent = stop;
-      div.onclick = () => {
-        input.value = stop;
-        box.style.display = 'none';
-      };
-      box.appendChild(div);
-    });
-
-    const rect = input.getBoundingClientRect();
-    box.style.top = `${rect.bottom + window.scrollY}px`;
-    box.style.left = `${rect.left + window.scrollX}px`;
-    box.style.display = 'block';
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!box.contains(e.target) && e.target !== input) {
-      box.style.display = 'none';
-    }
-  });
-}
-
-// Activate for both inputs
-setupSuggestions('from-input', 'from-suggestions');
-setupSuggestions('to-input', 'to-suggestions');
 
   
 </script>
