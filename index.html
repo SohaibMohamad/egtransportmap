@@ -377,6 +377,21 @@ function renderLikedRoutes() {
   z-index: 1005;
   display: none;
 }
+.result-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 260px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  overflow-y: auto;
+  padding: 10px;
+  z-index: 1005;
+  display: none;
+}
 
   </style>
 </head>
@@ -401,10 +416,28 @@ function renderLikedRoutes() {
 
   <!-- 🛣️ From-To Inputs -->
   <!-- 🛣️ From-To Inputs -->
-<div class="input-wrapper" id="fromto-wrapper">
-  <input type="text" id="from-input" placeholder="From...">
-  <input type="text" id="to-input" placeholder="To...">
-  <button class="clear-btn" onclick="clearFromTo()" style="top: 34px;">✖</button>
+<div class="fromto-section" style="position: relative; display: inline-block;">
+
+  <!-- From-To Inputs -->
+  <div class="input-wrapper" id="fromto-wrapper">
+    <input type="text" id="from-input" placeholder="From...">
+    <input type="text" id="to-input" placeholder="To...">
+    <button class="clear-btn" onclick="clearFromTo()" style="top: 34px;">✖</button>
+  </div>
+
+  <!-- From-To Button -->
+  <button class="action-button" onclick="searchFromTo()">From-To Route</button>
+
+  <!-- From-To Result Panel -->
+  <div class="result-panel" id="from-to-result-panel">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <strong>Matching Routes</strong>
+      <button onclick="document.getElementById('from-to-result-panel').style.display='none'" 
+              style="background: none; border: none; font-size: 16px; cursor: pointer;">✖</button>
+    </div>
+    <div id="from-to-result-content" style="margin-top: 8px;"></div>
+  </div>
+
 </div>
 
 <!-- 🔁 Suggestions -->
@@ -1082,11 +1115,7 @@ function searchFromTo() {
     content.appendChild(wrapper);
   });
 
-  // Position the result panel under the From-To button
-const fromToBtn = document.querySelector('.action-button');
-const btnRect = fromToBtn.getBoundingClientRect();
-panel.style.top = `${btnRect.bottom + window.scrollY + 8}px`;
-panel.style.left = `${btnRect.left + window.scrollX}px`;
+panel.style.display = 'block';
 
 }
 
