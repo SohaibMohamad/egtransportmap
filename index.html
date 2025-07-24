@@ -766,18 +766,28 @@ function toggleTheme() {
 function showInfoSearchResults(routes) {
   let panel = document.getElementById('info-search-results');
 
+  // Dynamically calculate position BELOW search input
+  const inputBox = document.getElementById('info-search-box');
+  const inputRect = inputBox.getBoundingClientRect();
+
   if (!panel) {
     panel = document.createElement('div');
     panel.id = 'info-search-results';
     panel.style.position = 'absolute';
-   const inputBox = document.getElementById('info-search-box');
-const inputRect = inputBox.getBoundingClientRect();
-
-panel.style.top = `${inputRect.bottom + window.scrollY + 8}px`;
-panel.style.right = '20px';
-
-    document.body.appendChild(panel); // 👈 MISSING LINE
+    panel.style.right = '20px';
+    document.body.appendChild(panel);
   }
+
+  panel.style.top = `${inputRect.bottom + window.scrollY + 8}px`;
+  panel.style.width = '300px';
+  panel.style.maxHeight = '400px';
+  panel.style.overflowY = 'auto';
+  panel.style.background = 'white';
+  panel.style.border = '1px solid #ccc';
+  panel.style.borderRadius = '10px';
+  panel.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+  panel.style.padding = '10px';
+  panel.style.zIndex = '1005';
 
   panel.innerHTML = '';
 
@@ -787,63 +797,63 @@ panel.style.right = '20px';
   }
 
   routes.forEach(route => {
-  const card = document.createElement('div');
-  card.style.padding = '10px';
-  card.style.marginBottom = '10px';
-  card.style.border = `2px solid ${route.color}`;
-  card.style.borderRadius = '8px';
-  card.style.background = '#f9f9f9';
-  card.style.cursor = 'pointer';
-  card.style.transition = 'background 0.2s ease';
+    const card = document.createElement('div');
+    card.style.padding = '10px';
+    card.style.marginBottom = '10px';
+    card.style.border = `2px solid ${route.color}`;
+    card.style.borderRadius = '8px';
+    card.style.background = '#f9f9f9';
+    card.style.cursor = 'pointer';
+    card.style.transition = 'background 0.2s ease';
 
-  card.onmouseover = () => card.style.background = '#eef6ff';
-  card.onmouseout = () => card.style.background = '#f9f9f9';
+    card.onmouseover = () => card.style.background = '#eef6ff';
+    card.onmouseout = () => card.style.background = '#f9f9f9';
 
-  card.innerHTML = `
-    <div style="font-weight: bold; color: ${route.color}; font-size: 15px;">${route.name}</div>
-    <div style="font-size: 13px; margin-top: 4px;">${route.info}</div>
-  `;
+    card.innerHTML = `
+      <div style="font-weight: bold; color: ${route.color}; font-size: 15px;">${route.name}</div>
+      <div style="font-size: 13px; margin-top: 4px;">${route.info}</div>
+    `;
 
-  card.onclick = () => {
-    showSingleRoute(route.id);
+    card.onclick = () => {
+      showSingleRoute(route.id);
 
-    // Same logic for opening and scrolling to the menu
-    let foundType = null;
-    for (const type in routeData) {
-      for (const group in routeData[type]) {
-        for (const r of routeData[type][group]) {
-          if (r.id === route.id) {
-            foundType = type;
-            break;
+      // Find transport type for the route
+      let foundType = null;
+      for (const type in routeData) {
+        for (const group in routeData[type]) {
+          for (const r of routeData[type][group]) {
+            if (r.id === route.id) {
+              foundType = type;
+              break;
+            }
           }
+          if (foundType) break;
         }
         if (foundType) break;
       }
-      if (foundType) break;
-    }
 
-    if (foundType) {
-      openMenu(foundType);
-      setTimeout(() => {
-        const panel = document.getElementById('menu-content-panel');
-        const routeCard = [...panel.querySelectorAll('.route-card')].find(c =>
-          c.getAttribute('data-name') === route.name.toLowerCase()
-        );
+      if (foundType) {
+        openMenu(foundType);
+        setTimeout(() => {
+          const menuPanel = document.getElementById('menu-content-panel');
+          const routeCard = [...menuPanel.querySelectorAll('.route-card')].find(c =>
+            c.getAttribute('data-name') === route.name.toLowerCase()
+          );
 
-        if (routeCard) {
-          routeCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          routeCard.style.outline = '2px solid #007bff';
-          setTimeout(() => {
-            routeCard.style.outline = 'none';
-          }, 1200);
-        }
-      }, 200);
-    }
-  };
+          if (routeCard) {
+            routeCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            routeCard.style.outline = '2px solid #007bff';
+            setTimeout(() => {
+              routeCard.style.outline = 'none';
+            }, 1200);
+          }
+        }, 200);
+      }
+    };
 
-  panel.appendChild(card);
-});
-
+    panel.appendChild(card);
+  });
+}
 
 
   
