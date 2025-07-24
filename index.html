@@ -305,6 +305,12 @@ function renderLikedRoutes() {
   <button onclick="showLikedRoutes()">❤️ Liked Routes</button>
   <input type="text" placeholder="🔍 Search Places..." id="info-search-box" oninput="searchInfo(this.value)" style="margin-top: 10px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
 </div>
+  <!-- Under the #info-search-box input -->
+<input type="text" placeholder="From..." id="from-input" style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
+<input type="text" placeholder="To..." id="to-input" style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
+<button onclick="searchFromTo()" style="margin-top: 8px; padding: 6px 12px; font-size: 14px; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer;">
+  🚏 From-To Route
+</button>
 
 <div class="icon-menu glass">
   <button onclick="openMenu('bus')">
@@ -853,6 +859,86 @@ function showInfoSearchResults(routes) {
 
     panel.appendChild(card);
   });
+}
+
+function searchFromTo() {
+  const from = document.getElementById('from-input').value.trim();
+  const to = document.getElementById('to-input').value.trim();
+
+  if (!from || !to) {
+    alert("Please enter both 'From' and 'To' locations.");
+    return;
+  }
+
+  let matchedRoute = null;
+
+  outerLoop:
+  for (const type in routeData) {
+    for (const group in routeData[type]) {
+      for (const route of routeData[type][group]) {
+        if (!route.info) continue;
+
+        const stops = route.info.split('-').map(s => s.trim());
+        const fromIndex = stops.findIndex(stop => stop.includes(from));
+        const toIndex = stops.findIndex(stop => stop.includes(to));
+
+        if (fromIndex !== -1 && toIndex !== -1 && fromIndex < toIndex) {
+          matchedRoute = route;
+          break outerLoop;
+        }
+      }
+    }
+  }
+
+  const panelId = 'from-to-result-panel';
+  let panel = document.getElementById(panelId);
+
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = panelId;
+    panel.style.position = 'absolute';
+    panel.style.right = '20px';
+    panel.style.top = '250px';
+    panel.style.width = '300px';
+    panel.style.maxHeight = '400px';
+    panel.style.overflowY = 'auto';
+    panel.style.background = 'white';
+    panel.style.border = '1px solid #ccc';
+    panel.style.borderRadius = '10px';
+    panel.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+    panel.style.padding = '10px';
+    panel.style.zIndex = '1005';
+    document.body.appendChild(panel);
+  }
+
+  panel.innerHTML = '';
+
+  if (!matchedRoute) {
+    panel.innerHTML = '<div>No route found between these points.</div>';
+    return;
+  }
+
+  const card = document.createElement('div');
+  card.style.padding = '10px';
+  card.style.marginBottom = '10px';
+  card.style.border = `2px solid ${matchedRoute.color}`;
+  card.style.borderRadius = '8px';
+  card.style.background = '#f9f9f9';
+  card.style.cursor = 'pointer';
+
+  card.innerHTML = `
+    <div style="font-weight: bold; color: ${matchedRoute.color}; font-size: 15px;">${matchedRoute.name}</div>
+    <div style="font-size: 13px; margin-top: 4px;">${matchedRoute.info}</div>
+  `;
+
+  card.onclick = () => {
+    showSingleRoute(matchedRoute.id);
+  };
+
+  panel.appendChild(card);
+
+  // Show it on the map
+  showSingleRoute(matchedRoute.id);
 }
 
 
