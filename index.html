@@ -314,26 +314,10 @@ function renderLikedRoutes() {
     style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
   <input type="text" id="to-input" placeholder="To..."
     style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
-  <div id="from-to-container" style="position: relative;">
-  <input type="text" id="from-input" placeholder="From..." 
-         style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
-  <input type="text" id="to-input" placeholder="To..." 
-         style="margin-top: 8px; padding: 6px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; width: 180px;" />
-  <div style="position: relative;">
-  <input type="text" placeholder="🔍 Search Places..." id="info-search-box" oninput="searchInfo(this.value)" 
-         style="width: 180px; padding-right: 24px;" />
-  <button onclick="document.getElementById('info-search-box').value=''; searchInfo('');"
-          style="position: absolute; right: 4px; top: 3px; border: none; background: none; font-size: 16px; cursor: pointer;">✖</button>
-  </div>
-
-  <!-- ✅ Result Panel Placeholder -->
-  <div style="position: relative;">
-  <input type="text" id="from-input" placeholder="From..." style="width: 180px; padding-right: 24px;" />
-  <input type="text" id="to-input" placeholder="To..." style="width: 180px; padding-right: 24px;" />
-  <button onclick="searchFromTo()">🚏 From-To Route</button>
-  <button onclick="clearFromTo()" style="position: absolute; right: 0; top: 3px; border: none; background: none; font-size: 16px; cursor: pointer;">✖</button>
-  </div>
-
+  <button onclick="searchFromTo()"
+    style="margin-top: 8px; padding: 6px 12px; font-size: 14px; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer;">
+    🚏 From-To Route
+  </button>
 </div>
 
 
@@ -889,92 +873,83 @@ function showInfoSearchResults(routes) {
 function searchFromTo() {
   const from = document.getElementById('from-input').value.trim();
   const to = document.getElementById('to-input').value.trim();
-  const panel = document.getElementById('from-to-result-panel');
-  const content = document.getElementById('from-to-result-content');
-
-  panel.style.display = 'block';
-  content.innerHTML = '';
 
   if (!from || !to) {
-    content.innerHTML = '<div>Please enter both "From" and "To" values.</div>';
+    alert("Please enter both 'From' and 'To' values.");
     return;
   }
 
-  const allRoutes = [];
+  let matchedRoute = null;
 
-  // Flatten routeData into array
+  outerLoop:
   for (const type in routeData) {
     for (const group in routeData[type]) {
       for (const route of routeData[type][group]) {
         if (!route.info) continue;
+
         const stops = route.info.split('-').map(s => s.trim());
-        allRoutes.push({ ...route, stops });
-      }
-    }
-  }
+        const fromIndex = stops.findIndex(s => s.includes(from));
+        const toIndex = stops.findIndex(s => s.includes(to));
 
-  const matches = [];
-
-  for (const route1 of allRoutes) {
-    const fromIndex = route1.stops.findIndex(s => s.includes(from));
-    if (fromIndex === -1) continue;
-
-    // Start looking for possible transfer points
-    for (let i = fromIndex + 1; i < route1.stops.length; i++) {
-      const junction = route1.stops[i];
-
-      for (const route2 of allRoutes) {
-        const junctionIndex = route2.stops.findIndex(s => s.includes(junction));
-        const toIndex = route2.stops.findIndex(s => s.includes(to));
-
-        if (junctionIndex !== -1 && toIndex !== -1 && junctionIndex < toIndex) {
-          matches.push([route1, route2]);
+        if (fromIndex !== -1 && toIndex !== -1 && fromIndex < toIndex) {
+          matchedRoute = route;
+          break outerLoop;
         }
       }
     }
   }
 
-  if (matches.length === 0) {
-    content.innerHTML = '<div>No connected route found.</div>';
+  const panelId = 'from-to-result-panel';
+  let panel = document.getElementById(panelId);
+
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = panelId;
+    panel.style.position = 'absolute';
+    panel.style.right = '20px';
+    const ref = document.getElementById('to-input');
+const refRect = ref.getBoundingClientRect();
+panel.style.top = `${refRect.bottom + window.scrollY + 10}px`;
+    panel.style.width = '300px';
+    panel.style.maxHeight = '400px';
+    panel.style.overflowY = 'auto';
+    panel.style.background = 'white';
+    panel.style.border = '1px solid #ccc';
+    panel.style.borderRadius = '10px';
+    panel.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+    panel.style.padding = '10px';
+    panel.style.zIndex = '1005';
+    document.body.appendChild(panel);
+  }
+
+  panel.innerHTML = '';
+
+  if (!matchedRoute) {
+    panel.innerHTML = '<div>No matching route found.</div>';
     return;
   }
 
-  // Show all route pairs
-  matches.forEach(([r1, r2]) => {
-    const wrapper = document.createElement('div');
-    wrapper.style.border = '1px solid #ccc';
-    wrapper.style.borderRadius = '8px';
-    wrapper.style.padding = '10px';
-    wrapper.style.marginBottom = '10px';
-    wrapper.style.background = '#f9f9f9';
+  const card = document.createElement('div');
+  card.style.padding = '10px';
+  card.style.marginBottom = '10px';
+  card.style.border = `2px solid ${matchedRoute.color}`;
+  card.style.borderRadius = '8px';
+  card.style.background = '#f9f9f9';
+  card.style.cursor = 'pointer';
 
-    [r1, r2].forEach(route => {
-      const card = document.createElement('div');
-      card.style.marginBottom = '6px';
-      card.style.borderLeft = `4px solid ${route.color}`;
-      card.style.paddingLeft = '8px';
-      card.style.cursor = 'pointer';
-      card.innerHTML = `
-        <div style="font-weight: bold; color: ${route.color}; font-size: 15px;">${route.name}</div>
-        <div style="font-size: 13px;">${route.info}</div>
-      `;
-      card.onclick = () => {
-        showSingleRoute(route.id);
-        panel.style.display = 'none';
-      };
-      wrapper.appendChild(card);
-    });
+  card.innerHTML = `
+    <div style="font-weight: bold; color: ${matchedRoute.color}; font-size: 15px;">${matchedRoute.name}</div>
+    <div style="font-size: 13px; margin-top: 4px;">${matchedRoute.info}</div>
+  `;
 
-    content.appendChild(wrapper);
-  });
+  card.onclick = () => {
+    showSingleRoute(matchedRoute.id);
+  };
+
+  panel.appendChild(card);
+
+  showSingleRoute(matchedRoute.id);
 }
-
-function clearFromTo() {
-  document.getElementById('from-input').value = '';
-  document.getElementById('to-input').value = '';
-  document.getElementById('from-to-result-panel').style.display = 'none';
-}
-
 
 
   
