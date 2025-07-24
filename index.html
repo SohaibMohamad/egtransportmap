@@ -365,17 +365,17 @@ function renderLikedRoutes() {
 
 /* Enhance From-To result panel */
 #from-to-result-panel {
-  max-height: 300px;
+  position: absolute;
+  width: 240px;
+  max-height: 260px;
   overflow-y: auto;
   background: white;
   border: 1px solid #ccc;
   border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   padding: 10px;
-  z-index: 1001;
-  position: absolute;
-  right: 20px;
-  top: 280px;
-  width: 280px;
+  z-index: 1005;
+  display: none;
 }
 
   </style>
@@ -418,14 +418,15 @@ function renderLikedRoutes() {
 <div class="result-panel" id="info-results" style="top: 190px;"></div>
 
 <!-- 🛣️ From-To Results -->
-<div class="result-panel" id="from-to-result-panel" style="top: 280px;">
-  <div style="display: flex; justify-content: space-between; align-items: center;">
+<div class="result-panel" id="from-to-result-panel">
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
     <strong>Matching Routes</strong>
     <button onclick="document.getElementById('from-to-result-panel').style.display='none'" 
             style="background: none; border: none; font-size: 16px; cursor: pointer;">✖</button>
   </div>
   <div id="from-to-result-content" style="margin-top: 8px;"></div>
 </div>
+
 
 
 <div class="icon-menu glass">
@@ -1080,6 +1081,13 @@ function searchFromTo() {
 
     content.appendChild(wrapper);
   });
+
+  // Position the result panel under the From-To button
+const fromToBtn = document.querySelector('.action-button');
+const btnRect = fromToBtn.getBoundingClientRect();
+panel.style.top = `${btnRect.bottom + window.scrollY + 8}px`;
+panel.style.left = `${btnRect.left + window.scrollX}px`;
+
 }
 
 // Collect all stops from routeData
