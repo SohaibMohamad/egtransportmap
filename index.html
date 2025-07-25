@@ -1120,45 +1120,27 @@ panel.style.top = `${btnRect.bottom + window.scrollY + 10}px`;
     wrapper.style.borderRadius = '6px';
     wrapper.style.background = '#f9f9f9';
 
-    for (let i = 0; i < routeChain.length; i++) {
-  const route = routeChain[i];
-
-  const card = document.createElement('div');
-  card.style.marginBottom = '6px';
-  card.style.borderLeft = `4px solid ${route.color}`;
-  card.style.paddingLeft = '8px';
-  card.style.cursor = 'pointer';
-  card.innerHTML = `
-    <div style="font-weight: bold; color: ${route.color}; font-size: 15px;">${route.name}</div>
-    <div style="font-size: 13px;">${route.info}</div>
-  `;
-  card.onclick = () => {
-    showSingleRoute(route.id);
-    panel.style.display = 'none';
-  };
-  wrapper.appendChild(card);
-
-  // Inject transfer note if there's another route after this
-  if (i < routeChain.length - 1) {
-    const nextRoute = routeChain[i + 2]; // skip the junction (which is at i+1)
-    const junctionStop = routeChain[i + 1];
-
-    const transferNote = document.createElement('div');
-    transferNote.style.color = 'gray';
-    transferNote.style.fontSize = '12px';
-    transferNote.style.margin = '4px 0 6px 8px';
-    transferNote.textContent = `تنزل في ${junctionStop} و تركب`;
-
-    wrapper.appendChild(transferNote);
-    i++; // skip junction in next loop iteration
-  }
-}
-
+    routeChain.forEach(route => {
+      const card = document.createElement('div');
+      card.style.marginBottom = '6px';
+      card.style.borderLeft = `4px solid ${route.color}`;
+      card.style.paddingLeft = '8px';
+      card.style.cursor = 'pointer';
+      card.innerHTML = `
+        <div style="font-weight: bold; color: ${route.color}; font-size: 15px;">${route.name}</div>
+        <div style="font-size: 13px;">${route.info}</div>
+      `;
+      card.onclick = () => {
+        showSingleRoute(route.id);
+        panel.style.display = 'none';
+      };
+      wrapper.appendChild(card);
+    });
 
     content.appendChild(wrapper);
   });
-}
 
+}
 
   
 </script>
