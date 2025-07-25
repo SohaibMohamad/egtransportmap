@@ -365,7 +365,7 @@ function renderLikedRoutes() {
 
 #from-to-result-panel {
   position: absolute;
-  top: calc(100% + 10px); /* below the from-to button */
+  top: auto;
   right: 20px;
   width: 280px;
   background: white;
@@ -377,6 +377,7 @@ function renderLikedRoutes() {
   max-height: 220px;
   overflow-y: auto;
 }
+
   </style>
 </head>
 <body>
@@ -1051,6 +1052,10 @@ function searchFromTo() {
   const content = document.getElementById('from-to-result-content');
 
   panel.style.display = 'block';
+  const button = document.querySelector('.action-button');
+const btnRect = button.getBoundingClientRect();
+panel.style.top = `${btnRect.bottom + window.scrollY + 10}px`;
+
   content.innerHTML = '';
 
   if (!from || !to) {
@@ -1115,22 +1120,40 @@ function searchFromTo() {
     wrapper.style.borderRadius = '6px';
     wrapper.style.background = '#f9f9f9';
 
-    routeChain.forEach(route => {
-      const card = document.createElement('div');
-      card.style.marginBottom = '6px';
-      card.style.borderLeft = `4px solid ${route.color}`;
-      card.style.paddingLeft = '8px';
-      card.style.cursor = 'pointer';
-      card.innerHTML = `
-        <div style="font-weight: bold; color: ${route.color}; font-size: 15px;">${route.name}</div>
-        <div style="font-size: 13px;">${route.info}</div>
-      `;
-      card.onclick = () => {
-        showSingleRoute(route.id);
-        panel.style.display = 'none';
-      };
-      wrapper.appendChild(card);
-    });
+    for (let i = 0; i < routeChain.length; i++) {
+  const route = routeChain[i];
+
+  const card = document.createElement('div');
+  card.style.marginBottom = '6px';
+  card.style.borderLeft = `4px solid ${route.color}`;
+  card.style.paddingLeft = '8px';
+  card.style.cursor = 'pointer';
+  card.innerHTML = `
+    <div style="font-weight: bold; color: ${route.color}; font-size: 15px;">${route.name}</div>
+    <div style="font-size: 13px;">${route.info}</div>
+  `;
+  card.onclick = () => {
+    showSingleRoute(route.id);
+    panel.style.display = 'none';
+  };
+  wrapper.appendChild(card);
+
+  // Inject transfer note if there's another route after this
+  if (i < routeChain.length - 1) {
+    const nextRoute = routeChain[i + 2]; // skip the junction (which is at i+1)
+    const junctionStop = routeChain[i + 1];
+
+    const transferNote = document.createElement('div');
+    transferNote.style.color = 'gray';
+    transferNote.style.fontSize = '12px';
+    transferNote.style.margin = '4px 0 6px 8px';
+    transferNote.textContent = `تنزل في ${junctionStop} و تركب`;
+
+    wrapper.appendChild(transferNote);
+    i++; // skip junction in next loop iteration
+  }
+}
+
 
     content.appendChild(wrapper);
   });
