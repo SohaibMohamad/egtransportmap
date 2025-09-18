@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Egypt Transport Map</title>
+  <link rel="icon" type="image/png" sizes="256x256" href="A6VKOY3fhn0O0jaKpdAT--1--o1p35-removebg-preview-modified.png">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap" rel="stylesheet" />
   <style>
@@ -35,6 +36,445 @@
       top: 10px;
       left: 50%;
       transform: translateX(-50%);
+      z-index: 1003;
+    }
+
+    .logo-container img {
+      max-height: 100px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .top-right-buttons {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+    width: 240px;
+  }
+
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .input-wrapper input {
+    padding: 6px 28px 6px 8px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 4px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .input-wrapper button.clear-btn {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .action-button {
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 8px;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .result-panel {
+    position: absolute;
+    right: 20px;
+    width: 280px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 999;
+    display: none;
+  }
+
+    .top-right-buttons button {
+      padding: 8px 14px;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+
+    .icon-menu {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 50px);
+      gap: 10px;
+      z-index: 1002;
+      padding: 10px;
+    }
+
+    .icon-menu button {
+      width: 50px;
+      height: 50px;
+      font-size: 22px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+    }
+
+    .menu-panel {
+      position: absolute;
+      bottom: 90px;
+      left: 20px;
+      width: 320px;
+      height: 255px;
+      display: none;
+      flex-direction: column;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      z-index: 1003;
+      overflow: hidden;
+    }
+
+    .menu-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      font-weight: bold;
+      background: #f5f5f5;
+      border-bottom: 1px solid #ddd;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+    }
+
+    .close-btn {
+      background: #e53935;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .search-box {
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 13px;
+      width: calc(100% - 24px);
+      margin: 6px auto;
+      display: block;
+    }
+
+    .menu-content-panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 10px;
+    }
+
+    details {
+      background: #fafafa;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 6px;
+      margin-bottom: 6px;
+    }
+
+    summary {
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .route-card {
+      background: rgba(255, 255, 255, 0.7);
+      padding: 8px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .route-btn {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .route-btn button {
+      flex: 1;
+      padding: 6px;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .pin-btn {
+      width: 35px;
+      background: #ff9800;
+    }
+
+    .pin-btn.pinned {
+      background: #4caf50;
+    }
+
+    .like-btn {
+      width: 35px;
+      background: #e91e63;
+    }
+
+    .route-description {
+      font-size: 12px;
+      color: black;
+      direction: rtl;
+    }
+
+    .menu-content-panel::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .menu-content-panel::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+
+    .like-btn.liked {
+     background: #a31545;
+    }
+
+    function showLikedRoutes() {
+  document.getElementById('menu-title').textContent = '❤️ Liked Routes';
+  document.getElementById('menu-panel').style.display = 'flex';
+  renderLikedRoutes();
+}
+
+function renderLikedRoutes() {
+  const contentPanel = document.getElementById('menu-content-panel');
+  contentPanel.innerHTML = '';
+  const routesArr = Object.values(likedRoutes);
+
+  if (routesArr.length === 0) {
+    contentPanel.innerHTML = '<div style="padding:20px;text-align:center;">No liked routes yet.</div>';
+    return;
+  }
+
+  const details = document.createElement('details');
+  details.open = true;
+  const summary = document.createElement('summary');
+  summary.textContent = "Liked";
+  details.appendChild(summary);
+
+  routesArr.forEach(route => {
+    const card = document.createElement('div');
+    card.className = 'route-card';
+
+    const btnRow = document.createElement('div');
+    btnRow.className = 'route-btn';
+
+    const routeBtn = document.createElement('button');
+    routeBtn.textContent = route.name;
+    routeBtn.style.background = route.color;
+    routeBtn.onclick = () => showSingleRoute(route.id);
+
+    const pinBtn = document.createElement('button');
+    pinBtn.textContent = '📌';
+    pinBtn.className = 'pin-btn';
+    pinBtn.onclick = () => togglePin(pinBtn, route.id);
+
+    const likeBtn = document.createElement('button');
+    likeBtn.textContent = '❤️';
+    likeBtn.className = 'like-btn liked';
+    likeBtn.onclick = () => {
+      toggleLike(route);
+      renderLikedRoutes(); // Refresh after unlike
+    };
+
+    const infoBtn = document.createElement('button');
+    infoBtn.textContent = 'ℹ️';
+    infoBtn.className = 'info-btn';
+    infoBtn.onclick = () => showInfo(route);
+
+    btnRow.appendChild(routeBtn);
+    btnRow.appendChild(pinBtn);
+    btnRow.appendChild(likeBtn);
+    btnRow.appendChild(infoBtn);
+
+    const desc = document.createElement('div');
+    desc.className = 'route-description';
+    desc.textContent = route.description;
+
+    card.appendChild(btnRow);
+    card.appendChild(desc);
+    details.appendChild(card);
+  });
+
+  contentPanel.appendChild(details);
+}
+
+    @media (max-width: 768px) {
+      .menu-panel {
+        width: 90%;
+        left: 5%;
+      }
+    }
+
+    .autocomplete-box {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1001;
+  width: 100%;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.autocomplete-box div {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.autocomplete-box div:hover {
+  background-color: #f0f0f0;
+}
+
+#from-to-result-panel {
+  position: absolute;
+  top: auto;
+  right: 20px;
+  width: 280px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 999;
+  display: none;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+  </style>
+</head>
+<body>
+
+<div class="logo-container">
+  <img src="A6VKOY3fhn0O0jaKpdAT--1--o1p35-removebg-preview.png" alt="Egypt Transport Map Logo" />
+</div>
+
+<div id="map"></div>
+
+<div class="top-right-buttons glass">
+  <button onclick="locateMe()">📍 Locate Me</button>
+  <button onclick="toggleTheme()">🌗 Theme</button>
+  <button onclick="showLikedRoutes()">❤️ Liked Routes</button>
+
+  <!-- 🔍 Search Input -->
+  <div class="input-wrapper" id="search-wrapper">
+    <input type="text" id="info-search-box" placeholder="🔍 Search Places..." oninput="searchInfo(this.value)">
+    <button class="clear-btn" onclick="clearSearch()">✖</button>
+  </div>
+
+  <!-- 🛣️ From-To Inputs -->
+  <div class="input-wrapper" id="fromto-wrapper">
+    <input type="text" id="from-input" placeholder="From...">
+    <input type="text" id="to-input" placeholder="To...">
+    <button class="clear-btn" onclick="clearFromTo()" style="top: 34px;">✖</button>
+  </div>
+  <button class="action-button" onclick="searchFromTo()">🚏 From-To Route</button>
+</div>
+
+<!-- 🔍 Search Results -->
+<div class="result-panel" id="info-results" style="top: 190px;"></div>
+
+<!-- 🛣️ From-To Results -->
+<div class="result-panel" id="from-to-result-panel">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <strong>Matching Routes</strong>
+    <button onclick="document.getElementById('from-to-result-panel').style.display='none'" 
+            style="background: none; border: none; font-size: 16px; cursor: pointer;">✖</button>
+  </div>
+  <div id="from-to-result-content" style="margin-top: 8px;"></div>
+</div>
+
+
+<div class="icon-menu glass">
+  <button onclick="openMenu('bus')">
+  <img src="pbus.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('brt')">
+  <img src="brt.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('cta')">
+  <img src="buss.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('metro')">
+  <img src="metro2.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('tram')">
+  <img src="tram.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('mini')">
+  <img src="mini.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('micro')">
+  <img src="micro.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('monorail')">
+  <img src="mono2.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('hst')">
+  <img src="hst.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+  <button onclick="openMenu('lrt')">
+  <img src="lrt.png" alt="Bus" style="width: 30px; height: 30px;" />
+  </button>
+</div>
+
+<div class="menu-panel" id="menu-panel">
+  <div class="menu-header-bar">
+    <span id="menu-title">Transport</span>
+    <button class="close-btn" onclick="closeMenu()">×</button>
+  </div>
+  <input type="text" class="search-box" placeholder="Search..." oninput="filterRoutes(this.value)" />
+  <div class="menu-content-panel" id="menu-content-panel"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([30.0444, 31.2357], 11);
+  const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+  const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png');
+  lightLayer.addTo(map);
+  let likedRoutes = {};
+
+  const routes = {
+    bus1: [[29.92431, 31.03046], [29.92777, 31.03586], [29.92917, 31.03846], [29.92911, 31.0395], [29.92951, 31.04045], [29.93076, 31.04192], [29.93165, 31.04257], [29.93242, 31.04326], [29.93238, 31.04358], [29.93222, 31.04393], [29.93217, 31.0441], [29.93223, 31.04438], [29.93225, 31.04472], [29.93266, 31.04455], [29.93297, 31.0445], [29.93313, 31.04452], [29.93351, 31.04478], [29.93602, 31.04853], [29.94228, 31.05821], [29.94492, 31.06231], [29.94632, 31.0645], [29.94786, 31.06683], [29.94818, 31.06734], [29.95287, 31.07461], [29.95366, 31.07572], [29.95519, 31.07696], [29.95573, 31.07864], [29.95448, 31.08104], [29.94958, 31.09276], [29.94734, 31.09817], [29.94683, 31.09941], [29.9455, 31.10269], [29.94498, 31.10323], [29.94426, 31.1033], [29.94377, 31.10278], [29.94367, 31.10217], [29.9439, 31.10158], [29.94432, 31.10129], [29.94534, 31.1015], [29.94876, 31.10341], [29.9549, 31.1058], [29.95784, 31.1078], [29.95979, 31.10868], [29.96343, 31.10896], [29.96653, 31.10891], [29.96973, 31.10858], [29.97129, 31.10894], [29.97607, 31.11164], [29.97872, 31.11453], [29.98076, 31.11837], [29.98244, 31.12176], [29.98415, 31.12395], [29.98782, 31.12805], [29.98802, 31.12975], [29.98747, 31.13142], [29.98713, 31.13293], [29.98651, 31.13389], [29.98577, 31.13464], [29.98487, 31.13609], [29.98581, 31.13851], [29.98709, 31.14117], [29.9875, 31.14101], [29.98834, 31.14026], [29.98888, 31.13917], [29.98989, 31.13527], [29.99001, 31.13518], [29.99011, 31.13514], [29.99029, 31.13517], [29.99154, 31.13887], [29.99185, 31.14023], [29.99206, 31.14123], [29.99244, 31.14372], [29.99368, 31.14738], [29.99448, 31.14897], [29.99552, 31.15167], [29.99651, 31.15471], [29.99808, 31.15899], [29.99854, 31.16021], [29.99986, 31.16384], [30.00147, 31.16794], [30.00225, 31.17002], [30.00617, 31.18023], [30.00874, 31.18686], [30.00964, 31.18921], [30.01117, 31.19314], [30.01272, 31.19715], [30.01359, 31.19912], [30.01456, 31.20131], [30.01477, 31.20309], [30.01473, 31.20459], [30.01475, 31.20516], [30.01449, 31.20568], [30.01429, 31.20646], [30.01465, 31.20928], [30.01475, 31.20989], [30.01527, 31.21187], [30.01533, 31.21196], [30.01544, 31.21206], [30.01549, 31.21208], [30.01559, 31.21213], [30.01569, 31.21215], [30.01644, 31.21207], [30.01834, 31.21184], [30.02153, 31.2115], [30.02432, 31.2111], [30.02589, 31.21089], [30.02724, 31.21094], [30.02757, 31.21201], [30.02808, 31.2156], [30.02829, 31.21651], [30.02845, 31.21752], [30.02843, 31.22177], [30.02824, 31.22611], [30.0282, 31.22653], [30.02818, 31.22656], [30.02816, 31.22669], [30.02818, 31.22673], [30.02822, 31.22677], [30.02881, 31.22939], [30.02915, 31.2306], [30.02934, 31.23243], [30.02997, 31.23388], [30.02896, 31.23331], [30.02912, 31.23257], [30.03087, 31.23249], [30.03418, 31.23352], [30.03553, 31.23388], [30.03836, 31.23476], [30.04043, 31.23531], [30.04389, 31.23608], [30.04418, 31.23607], [30.04435, 31.23617], [30.0447, 31.23605], [30.04552, 31.23544], [30.0466, 31.23482], [30.04899, 31.23456], [30.05041, 31.23547], [30.05153, 31.23663], [30.05186, 31.23705], [30.05352, 31.2388], [30.0554, 31.24071], [30.05935, 31.24482], [30.06089, 31.24654], [30.06171, 31.2479], [30.06425, 31.25416], [30.06674, 31.2605], [30.06826, 31.26464], [30.06841, 31.26568], [30.06951, 31.26898], [30.07043, 31.27189], [30.07059, 31.27252], [30.07082, 31.27328], [30.07103, 31.27402], [30.07135, 31.27505], [30.07178, 31.27776], [30.07215, 31.27871], [30.07275, 31.27963], [30.07426, 31.28124], [30.07485, 31.28203], [30.07487, 31.28238], [30.0747, 31.28291], [30.07342, 31.28474], [30.0732, 31.28513], [30.07306, 31.28534], [30.07168, 31.28742], [30.07068, 31.28894], [30.06944, 31.29085], [30.06888, 31.29161], [30.06809, 31.29235], [30.06726, 31.29322], [30.06515, 31.29601], [30.0633, 31.29845], [30.06239, 31.29978], [30.06208, 31.30026], [30.06135, 31.30098], [30.0591, 31.30252], [30.05884, 31.3028], [30.05877, 31.30333], [30.06086, 31.30758], [30.06257, 31.31104], [30.06582, 31.3171], [30.06673, 31.32028], [30.06702, 31.32286], [30.066, 31.32497], [30.0644, 31.3253], [30.0626, 31.32554], [30.05668, 31.32643], [30.05226, 31.3271], [30.05151, 31.32726], [30.04535, 31.32868], [30.0404, 31.32974], [30.0403, 31.32974], [30.04028, 31.32977], [30.04026, 31.3298], [30.04024, 31.32988], [30.04026, 31.32994], [30.04028, 31.32995], [30.0403, 31.32998], [30.04042, 31.32997], [30.04086, 31.32985]],
+    bus2: [[29.92432, 31.03049], [29.92777, 31.03586], [29.92917, 31.03846], [29.92911, 31.0395], [29.93031, 31.04124], [29.93118, 31.04239], [29.93212, 31.04287], [29.93243, 31.04339], [29.93233, 31.04372], [29.93219, 31.04402], [29.93219, 31.04428], [29.93233, 31.04464], [29.9324, 31.0448], [29.93295, 31.04448], [29.9331, 31.04453], [29.93324, 31.04448], [29.93602, 31.04853], [29.94159, 31.05718], [29.94469, 31.06191], [29.94591, 31.06377], [29.94722, 31.06584], [29.94808, 31.06717], [29.95106, 31.0717], [29.95366, 31.07572], [29.95519, 31.07696], [29.95573, 31.07864], [29.95448, 31.08104], [29.94901, 31.09424], [29.94715, 31.09875], [29.94644, 31.10043], [29.94517, 31.10309], [29.94465, 31.10334], [29.94398, 31.1031], [29.94367, 31.10243], [29.94378, 31.10178], [29.94416, 31.10136], [29.94506, 31.10132], [29.94788, 31.10285], [29.95425, 31.10558], [29.95663, 31.10682], [29.95931, 31.10853], [29.96324, 31.10896], [29.96653, 31.10891], [29.96973, 31.10858], [29.97129, 31.10894], [29.97607, 31.11164], [29.97872, 31.11453], [29.98076, 31.11837], [29.98245, 31.12178], [29.98604, 31.126], [29.98782, 31.12805], [29.98802, 31.12975], [29.98747, 31.13142], [29.98713, 31.13293], [29.98651, 31.13389], [29.98517, 31.1352], [29.98497, 31.13645], [29.98591, 31.13925], [29.98676, 31.14135], [29.98782, 31.14436], [29.98892, 31.14726], [29.98932, 31.14825], [29.98908, 31.14971], [29.98761, 31.15039], [29.98652, 31.15112], [29.98517, 31.15247], [29.98149, 31.15683], [29.97862, 31.16059], [29.97741, 31.16391], [29.97874, 31.16151], [29.9795, 31.16004], [29.98181, 31.15718], [29.98596, 31.15238], [29.98625, 31.15277], [29.98669, 31.15365], [29.98722, 31.15506], [29.98769, 31.15618], [29.98793, 31.15673], [29.98878, 31.15903], [29.98931, 31.16049], [29.99042, 31.16352], [29.99078, 31.16451], [29.99131, 31.16608], [29.99298, 31.17077], [29.99324, 31.17153], [29.99333, 31.17186], [29.99398, 31.17364], [29.99418, 31.17425], [29.99457, 31.17527], [29.99495, 31.17634], [29.99538, 31.17783], [29.99561, 31.1788], [29.99609, 31.18073], [29.9965, 31.18251], [29.99659, 31.18296], [29.99682, 31.18353], [29.99715, 31.18377], [29.99742, 31.18383], [29.99778, 31.18404], [29.99828, 31.18512], [29.99863, 31.18597], [29.99881, 31.18644], [30.00002, 31.18971], [30.00181, 31.19429], [30.00298, 31.19732], [30.00345, 31.19877], [30.00408, 31.20032], [30.00362, 31.19876], [30.00353, 31.19723], [30.00526, 31.19699], [30.00694, 31.19675], [30.01059, 31.20471], [30.01242, 31.20798], [30.0138, 31.20919], [30.01455, 31.20986], [30.01466, 31.21002], [30.01502, 31.21141], [30.0153, 31.21193], [30.01539, 31.21202], [30.01546, 31.21207], [30.01556, 31.21212], [30.01563, 31.21214], [30.0162, 31.2121], [30.01658, 31.21205], [30.02135, 31.21151], [30.0243, 31.2111], [30.02574, 31.2109], [30.02665, 31.21093], [30.02855, 31.21057], [30.03022, 31.21239], [30.03133, 31.21238], [30.0367, 31.21157], [30.03796, 31.21142], [30.03939, 31.21123], [30.0408, 31.21107], [30.04168, 31.2113], [30.04265, 31.21162], [30.04497, 31.21222], [30.04572, 31.21205], [30.04685, 31.21172], [30.04713, 31.21174], [30.04729, 31.21192], [30.04747, 31.21289], [30.04767, 31.21467], [30.04811, 31.21725], [30.04853, 31.21962], [30.04903, 31.22671], [30.04916, 31.23086], [30.04914, 31.23368], [30.0493, 31.23444], [30.05056, 31.23576], [30.05352, 31.2388], [30.0554, 31.24071], [30.05935, 31.24482], [30.06089, 31.24654], [30.06179, 31.24813], [30.06458, 31.25496], [30.06698, 31.26129], [30.06827, 31.26484], [30.06896, 31.26724], [30.07009, 31.27066], [30.07049, 31.27212], [30.0708, 31.27323], [30.071, 31.27384], [30.0716, 31.27669], [30.07196, 31.27805], [30.07225, 31.27872], [30.07292, 31.27968], [30.07432, 31.28115], [30.07485, 31.28203], [30.07487, 31.28238], [30.0747, 31.28291], [30.07454, 31.28329], [30.07374, 31.2845], [30.07378, 31.28514], [30.07532, 31.28691]      transform: translateX(-50%);
       z-index: 1003;
     }
 
@@ -451,3 +891,4 @@ function toggleTheme() {
 </script>
 </body>
 </html>
+
